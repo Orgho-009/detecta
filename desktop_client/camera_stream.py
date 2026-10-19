@@ -71,36 +71,69 @@ class CameraStream:
                         buf.extend(chunk)
 
                         while True:
-                            a = buf.find(b'\xff\xd8')
-                            if a == -1:
-                                if len(buf) > 4:
-                                    buf = buf[-4:]
-                                break
-                            b = buf.find(b'\xff\xd9', a + 2)
-                            if b == -1:
-                                if a > 0:
-                                    del buf[:a]
-                                break
+                            # 1. Content-Length parser (standard for ESP32-CAM MJPEG)
+                            hdr = buf.find(b'Content-Length:')
+                            if hdr != -1:
+                                end_hdr = buf.find(b'\r\n\r\n', hdr)
+                                if end_hdr == -1:
+                                    break
+                                try:
+                                    clen = int(buf[hdr + 15:end_hdr].strip())
+                                    start = end_hdr + 4
+                                    if len(buf) < start + clen:
+                                        # Wait for remaining frame packets to arrive
+                                        break
+                                    jpg = bytes(buf[start:start + clen])
+                                    del buf[:start + clen]
 
-                            jpg = bytes(buf[a:b+2])
-                            del buf[:b+2]
+                                    if len(jpg) > 2000 and jpg[:2] == b'\xff\xd8' and jpg[-2:] == b'\xff\xd9':
+                                        raw = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+                                        if raw is not None:
+                                            processed = cv2.flip(raw, -1)
+                                            with self.lock:
+                                                self.frame = processed
+                                                self.last_frame_time = time.time()
+                                            self.new_frames += 1
+                                            count += 1
+                                except Exception:
+                                    del buf[:end_hdr + 4]
+                            else:
+                                # Fallback: search for SOI and EOI with boundary \xff\xd9\r\n--
+                                a = buf.find(b'\xff\xd8')
+                                if a == -1:
+                                    if len(buf) > 4:
+                                        buf = buf[-4:]
+                                    break
+                                b = buf.find(b'\xff\xd9\r\n--', a + 2)
+                                if b == -1:
+                                    # Secondary fallback for VGA (size >= 6000)
+                                    b_alt = buf.find(b'\xff\xd9', a + 6000)
+                                    if b_alt != -1:
+                                        b = b_alt
+                                    else:
+                                        if a > 0:
+                                            del buf[:a]
+                                        break
 
-                            # Decode frame
-                            raw = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
-                            if raw is not None:
-                                processed = cv2.flip(raw, -1)
-                                with self.lock:
-                                    self.frame = processed
-                                    self.last_frame_time = time.time()
-                                self.new_frames += 1
-                                count += 1
+                                jpg = bytes(buf[a:b + 2])
+                                del buf[:b + 2]
 
-                                now = time.time()
-                                if now - last_calc >= 0.8:
-                                    calc_fps = count / (now - last_calc)
-                                    self.fps = round(calc_fps if self.fps == 0.0 else (0.6 * self.fps + 0.4 * calc_fps), 1)
-                                    count = 0
-                                    last_calc = now
+                                if len(jpg) > 2000 and jpg[:2] == b'\xff\xd8' and jpg[-2:] == b'\xff\xd9':
+                                    raw = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+                                    if raw is not None:
+                                        processed = cv2.flip(raw, -1)
+                                        with self.lock:
+                                            self.frame = processed
+                                            self.last_frame_time = time.time()
+                                        self.new_frames += 1
+                                        count += 1
+
+                            now = time.time()
+                            if now - last_calc >= 0.8:
+                                calc_fps = count / (now - last_calc)
+                                self.fps = round(calc_fps if self.fps == 0.0 else (0.6 * self.fps + 0.4 * calc_fps), 1)
+                                count = 0
+                                last_calc = now
 
             except Exception:
                 time.sleep(0.3)

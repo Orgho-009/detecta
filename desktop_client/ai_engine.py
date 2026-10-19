@@ -25,25 +25,24 @@ try:
 except Exception:
     HAS_MEDIAPIPE = False
 
-TARGET_CLASSES = {
-    0: "Human",
-    39: "Bottle / Spray",
-    41: "Cup",
-    46: "Banana",
-    47: "Apple",
-    49: "Orange / Fruit",
-    58: "Flowers / Plant",
-    62: "TV/Monitor",
-    63: "Laptop",
-    64: "Mouse",
-    65: "Mouse",          # Remote remapped to Mouse in desk context
-    66: "Keyboard",
-    67: "Cell Phone",
-    73: "Book",
-    75: "Vase / Flowers",
-    77: "Doll / Teddy Bear"
+COCO_NAMES = {
+    0: "Human", 1: "Bicycle", 2: "Car", 3: "Motorcycle", 4: "Airplane",
+    5: "Bus", 6: "Train", 7: "Truck", 8: "Boat", 9: "Traffic Light",
+    10: "Fire Hydrant", 11: "Stop Sign", 12: "Parking Meter", 13: "Bench", 14: "Bird",
+    15: "Cat", 16: "Dog", 17: "Horse", 18: "Sheep", 19: "Cow",
+    20: "Elephant", 21: "Bear", 22: "Zebra", 23: "Giraffe", 24: "Backpack",
+    25: "Umbrella", 26: "Handbag", 27: "Tie", 28: "Suitcase", 29: "Frisbee",
+    30: "Skis", 31: "Snowboard", 32: "Sports Ball", 33: "Kite", 34: "Baseball Bat",
+    35: "Baseball Glove", 36: "Skateboard", 37: "Surfboard", 38: "Tennis Racket", 39: "Bottle / Spray",
+    40: "Wine Glass", 41: "Cup / Mug", 42: "Fork", 43: "Knife", 44: "Spoon",
+    45: "Bowl", 46: "Banana", 47: "Apple", 48: "Sandwich", 49: "Orange / Fruit",
+    50: "Broccoli", 51: "Carrot", 52: "Hot Dog", 53: "Pizza", 54: "Donut",
+    55: "Cake", 56: "Chair", 57: "Couch", 58: "Flowers / Plant", 59: "Bed",
+    60: "Dining Table", 61: "Toilet", 62: "TV/Monitor", 63: "Laptop", 64: "Mouse",
+    65: "Remote", 66: "Keyboard", 67: "Cell Phone", 68: "Microwave", 69: "Oven",
+    70: "Toaster", 71: "Sink", 72: "Refrigerator", 73: "Book", 74: "Watch / Clock",
+    75: "Vase / Flowers", 76: "Scissors", 77: "Doll / Teddy Bear", 78: "Spray / Hair Drier", 79: "Toothbrush"
 }
-ALLOWED_CLASS_IDS = list(TARGET_CLASSES.keys())
 
 GESTURE_EMOJIS = {
     "Thumb_Up": "👍 Thumbs Up",
@@ -181,17 +180,16 @@ class AIEngine:
         h, w = frame.shape[:2]
         annotated = frame.copy()
 
-        # 1. Run YOLO inference on curated target classes
+        # 1. Run YOLO inference across all 80 COCO classes
         results = self.model(
             frame,
-            classes=ALLOWED_CLASS_IDS,
-            conf=0.18,
+            conf=0.22,
             device=self.device,
             verbose=False
         )
 
         raw_human_boxes = []
-        new_detections = []
+        candidates = []
 
         if len(results) > 0 and len(results[0].boxes) > 0:
             for b in results[0].boxes:
@@ -205,48 +203,44 @@ class AIEngine:
                 if cls_id == 0:
                     if score >= 0.35:
                         raw_human_boxes.append((x1, y1, x2, y2, score))
-                else:
-                    cls_name = TARGET_CLASSES.get(cls_id, self.model.names.get(cls_id, f"obj_{cls_id}"))
+                    continue
 
-                    # Peripheral Disambiguation:
-                    # A compact dark device held in palm/hand or on desk is a Mouse
-                    if cls_name == "Cell Phone":
-                        if aspect < 1.7 and max(bw, bh) < 220:
-                            cls_name = "Mouse"
-                    elif cls_name in ["Keyboard", "Remote"]:
-                        if max(bw, bh) < 220:
-                            cls_name = "Mouse"
+                cls_name = COCO_NAMES.get(cls_id, self.model.names.get(cls_id, f"obj_{cls_id}"))
 
-                    # Per-object confidence and geometry sanity filters:
-                    keep = False
-                    if cls_name == "Mouse":
-                        keep = (score >= 0.22)
-                    elif cls_name in ["Flowers / Plant", "Vase / Flowers"]:
-                        keep = (score >= 0.28 and min(bw, bh) >= 40)
-                    elif cls_name in ["Banana", "Apple", "Orange / Fruit"]:
-                        keep = (score >= 0.30 and min(bw, bh) >= 30)
-                    elif cls_name == "Bottle / Spray":
-                        # Require minimum 35px width and 70px height to eliminate curtain folds
-                        keep = (score >= 0.38 and bw >= 35 and bh >= 70)
-                    elif cls_name == "Cup":
-                        keep = (score >= 0.30 and min(bw, bh) >= 30)
-                    elif cls_name == "Book":
-                        # Reject curtain folds (folds have high aspect ratio > 2.5 or narrow width < 45px)
-                        keep = (score >= 0.40 and min(bw, bh) >= 45 and aspect < 2.5)
-                    elif cls_name == "Doll / Teddy Bear":
-                        keep = (score >= 0.28)
-                    elif cls_name == "Laptop":
-                        keep = (score >= 0.35 and bw >= 80 and bh >= 60)
-                    elif cls_name == "TV/Monitor":
-                        # Reject full frame / window border false positives
-                        keep = (score >= 0.55 and (bw * bh) < 0.70 * (w * h))
-                    elif cls_name == "Cell Phone":
-                        keep = (score >= 0.35 and min(bw, bh) >= 35)
-                    else:
-                        keep = (score >= 0.35)
+                # Universal Sanity Filters:
+                # 1. Reject optical slivers / curtain pleats (minimum box dimension >= 20px)
+                if min(bw, bh) < 20:
+                    continue
+                # 2. Reject full camera frame background boxes (e.g. whole screen TV hallucination)
+                if (bw * bh) > 0.80 * (w * h):
+                    continue
+                # 3. Furniture size constraint (Chair / Couch / Bed must be real furniture, not handheld)
+                if cls_name in ["Chair", "Couch", "Bed"] and (min(bw, bh) < 130 or bh < 160):
+                    continue
+                # 4. Book / Paper (reject high-aspect curtain folds)
+                if cls_name == "Book" and (aspect > 2.8 or min(bw, bh) < 40):
+                    continue
+                # 5. Scissors filter (prevent glasses misidentification)
+                if cls_name == "Scissors" and (score < 0.45 or min(bw, bh) < 40):
+                    continue
 
-                    if keep:
-                        new_detections.append((cls_name, [x1, y1, x2, y2], score))
+                candidates.append((score, cls_name, [x1, y1, x2, y2], aspect, bw, bh))
+
+        # Cross-class NMS: sort by confidence descending so higher-scoring class wins overlapping regions
+        candidates.sort(key=lambda x: x[0], reverse=True)
+        new_detections = []
+        for score, name, box, aspect, bw, bh in candidates:
+            overlap = False
+            for _, fbox, _ in new_detections:
+                if calc_iou(box, fbox) > 0.50:
+                    overlap = True
+                    break
+            if not overlap:
+                # Disambiguate handheld objects AFTER cross-class NMS:
+                # If compact handheld and NOT a watch/clock dial, it is a Mouse!
+                if name == "Cell Phone" and aspect < 1.55 and max(bw, bh) < 200:
+                    name = "Mouse"
+                new_detections.append((name, box, score))
 
         # 2. Biometric Face Recognition (Staggered on frame_count % 4 == 2 to avoid coinciding with gestures)
         should_check_face = (

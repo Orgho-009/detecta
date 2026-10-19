@@ -360,18 +360,22 @@
             if (k === 'Human') return;
             let icon = 'fa-cube';
             const lk = k.toLowerCase();
-            if (lk.includes('bottle')) icon = 'fa-bottle-water';
+            if (lk.includes('bottle') || lk.includes('spray')) icon = 'fa-bottle-water';
             else if (lk.includes('mouse')) icon = 'fa-computer-mouse';
             else if (lk.includes('laptop')) icon = 'fa-laptop';
             else if (lk.includes('cup') || lk.includes('mug')) icon = 'fa-mug-saucer';
-            else if (lk.includes('clock')) icon = 'fa-clock';
+            else if (lk.includes('clock') || lk.includes('watch')) icon = 'fa-clock';
             else if (lk.includes('phone')) icon = 'fa-mobile-screen-button';
+            else if (lk.includes('keyboard')) icon = 'fa-keyboard';
+            else if (lk.includes('remote')) icon = 'fa-gamepad';
+            else if (lk.includes('scissors')) icon = 'fa-scissors';
             else if (lk.includes('bear') || lk.includes('doll')) icon = 'fa-paw';
             else if (lk.includes('plant') || lk.includes('flower') || lk.includes('vase')) icon = 'fa-leaf';
             else if (lk.includes('apple') || lk.includes('banana') || lk.includes('orange') || lk.includes('fruit')) icon = 'fa-apple-whole';
             else if (lk.includes('book')) icon = 'fa-book';
-            else if (lk.includes('chair')) icon = 'fa-chair';
-            else if (lk.includes('fan')) icon = 'fa-fan';
+            else if (lk.includes('backpack') || lk.includes('bag') || lk.includes('suitcase')) icon = 'fa-briefcase';
+            else if (lk.includes('chair') || lk.includes('couch')) icon = 'fa-couch';
+            else if (lk.includes('tv') || lk.includes('monitor')) icon = 'fa-tv';
 
             html += `
               <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900/60 border border-white/5">
