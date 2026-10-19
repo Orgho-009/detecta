@@ -25,24 +25,28 @@ try:
 except Exception:
     HAS_MEDIAPIPE = False
 
-COCO_NAMES = {
-    0: "Human", 1: "Bicycle", 2: "Car", 3: "Motorcycle", 4: "Airplane",
-    5: "Bus", 6: "Train", 7: "Truck", 8: "Boat", 9: "Traffic Light",
-    10: "Fire Hydrant", 11: "Stop Sign", 12: "Parking Meter", 13: "Bench", 14: "Bird",
-    15: "Cat", 16: "Dog", 17: "Horse", 18: "Sheep", 19: "Cow",
-    20: "Elephant", 21: "Bear", 22: "Zebra", 23: "Giraffe", 24: "Backpack",
-    25: "Umbrella", 26: "Handbag", 27: "Tie", 28: "Suitcase", 29: "Frisbee",
-    30: "Skis", 31: "Snowboard", 32: "Sports Ball", 33: "Kite", 34: "Baseball Bat",
-    35: "Baseball Glove", 36: "Skateboard", 37: "Surfboard", 38: "Tennis Racket", 39: "Bottle / Spray",
-    40: "Wine Glass", 41: "Cup / Mug", 42: "Fork", 43: "Knife", 44: "Spoon",
-    45: "Bowl", 46: "Banana", 47: "Apple", 48: "Sandwich", 49: "Orange / Fruit",
-    50: "Broccoli", 51: "Carrot", 52: "Hot Dog", 53: "Pizza", 54: "Donut",
-    55: "Cake", 56: "Chair", 57: "Couch", 58: "Flowers / Plant", 59: "Bed",
-    60: "Dining Table", 61: "Toilet", 62: "TV/Monitor", 63: "Laptop", 64: "Mouse",
-    65: "Remote", 66: "Keyboard", 67: "Cell Phone", 68: "Microwave", 69: "Oven",
-    70: "Toaster", 71: "Sink", 72: "Refrigerator", 73: "Book", 74: "Watch / Clock",
-    75: "Vase / Flowers", 76: "Scissors", 77: "Doll / Teddy Bear", 78: "Spray / Hair Drier", 79: "Toothbrush"
+INDOOR_TARGET_CLASSES = {
+    0: "Human",
+    24: "Backpack / Bag",
+    26: "Handbag",
+    39: "Bottle / Spray",
+    41: "Cup / Mug",
+    46: "Banana",
+    47: "Apple",
+    49: "Orange / Fruit",
+    58: "Flowers / Plant",
+    62: "TV/Monitor",
+    63: "Laptop",
+    64: "Mouse",
+    65: "Remote",
+    66: "Keyboard",
+    67: "Cell Phone",
+    73: "Book",
+    74: "Watch / Clock",
+    75: "Vase / Flowers",
+    77: "Doll / Teddy Bear"
 }
+ALLOWED_CLASS_IDS = list(INDOOR_TARGET_CLASSES.keys())
 
 GESTURE_EMOJIS = {
     "Thumb_Up": "👍 Thumbs Up",
@@ -180,10 +184,11 @@ class AIEngine:
         h, w = frame.shape[:2]
         annotated = frame.copy()
 
-        # 1. Run YOLO inference across all 80 COCO classes
+        # 1. Run YOLO inference strictly on indoor/everyday curated classes (conf=0.28)
         results = self.model(
             frame,
-            conf=0.22,
+            classes=ALLOWED_CLASS_IDS,
+            conf=0.28,
             device=self.device,
             verbose=False
         )
@@ -205,23 +210,20 @@ class AIEngine:
                         raw_human_boxes.append((x1, y1, x2, y2, score))
                     continue
 
-                cls_name = COCO_NAMES.get(cls_id, self.model.names.get(cls_id, f"obj_{cls_id}"))
+                cls_name = INDOOR_TARGET_CLASSES.get(cls_id, f"obj_{cls_id}")
 
                 # Universal Sanity Filters:
-                # 1. Reject optical slivers / curtain pleats (minimum box dimension >= 20px)
-                if min(bw, bh) < 20:
+                # 1. Reject optical slivers / curtain pleats (minimum box dimension >= 25px)
+                if min(bw, bh) < 25:
                     continue
                 # 2. Reject full camera frame background boxes (e.g. whole screen TV hallucination)
-                if (bw * bh) > 0.80 * (w * h):
+                if (bw * bh) > 0.75 * (w * h):
                     continue
-                # 3. Furniture size constraint (Chair / Couch / Bed must be real furniture, not handheld)
-                if cls_name in ["Chair", "Couch", "Bed"] and (min(bw, bh) < 130 or bh < 160):
+                # 3. Book / Paper (reject high-aspect curtain folds)
+                if cls_name == "Book" and (aspect > 2.5 or min(bw, bh) < 40):
                     continue
-                # 4. Book / Paper (reject high-aspect curtain folds)
-                if cls_name == "Book" and (aspect > 2.8 or min(bw, bh) < 40):
-                    continue
-                # 5. Scissors filter (prevent glasses misidentification)
-                if cls_name == "Scissors" and (score < 0.45 or min(bw, bh) < 40):
+                # 4. TV/Monitor (reject desktop/wall false positives)
+                if cls_name == "TV/Monitor" and (score < 0.50 or bw < 120 or bh < 90):
                     continue
 
                 candidates.append((score, cls_name, [x1, y1, x2, y2], aspect, bw, bh))
@@ -232,13 +234,15 @@ class AIEngine:
         for score, name, box, aspect, bw, bh in candidates:
             overlap = False
             for _, fbox, _ in new_detections:
-                if calc_iou(box, fbox) > 0.50:
+                if calc_iou(box, fbox) > 0.40:
                     overlap = True
                     break
             if not overlap:
                 # Disambiguate handheld objects AFTER cross-class NMS:
-                # If compact handheld and NOT a watch/clock dial, it is a Mouse!
-                if name == "Cell Phone" and aspect < 1.55 and max(bw, bh) < 200:
+                # A compact dark peripheral held or on desk is a Mouse
+                if name == "Cell Phone" and aspect < 1.55 and max(bw, bh) < 190:
+                    name = "Mouse"
+                elif name == "Remote" and max(bw, bh) < 190:
                     name = "Mouse"
                 new_detections.append((name, box, score))
 
@@ -316,19 +320,20 @@ class AIEngine:
         for cls_name, box, score in new_detections:
             matched = False
             for t in self.tracked_objects:
-                if t.cls_name == cls_name and calc_iou(t.box, box) > 0.25:
-                    ttl_val = 8 if cls_name == "Doll / Teddy Bear" else 6
+                if calc_iou(t.box, box) > 0.35:
+                    t.cls_name = cls_name
+                    ttl_val = 8 if cls_name == "Doll / Teddy Bear" else 5
                     t.update(box, score, ttl=ttl_val)
                     matched = True
                     break
             if not matched:
-                ttl_val = 8 if cls_name == "Doll / Teddy Bear" else 6
+                ttl_val = 8 if cls_name == "Doll / Teddy Bear" else 5
                 self.tracked_objects.append(TrackedBox(cls_name, box, score, ttl=ttl_val))
 
         # Decay and remove expired tracks
         active_objects = []
         for t in self.tracked_objects:
-            was_updated = any(t.cls_name == c and calc_iou(t.box, b) > 0.25 for c, b, _ in new_detections)
+            was_updated = any(calc_iou(t.box, b) > 0.35 for _, b, _ in new_detections)
             if not was_updated:
                 t.ttl -= 1
             if t.ttl > 0:

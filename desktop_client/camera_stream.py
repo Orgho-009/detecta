@@ -62,7 +62,7 @@ class CameraStream:
                     last_calc = time.time()
                     count = 0
 
-                    for chunk in r.iter_content(chunk_size=4096):
+                    for chunk in r.iter_content(chunk_size=32768):
                         if self.stopped:
                             break
                         if not chunk:
