@@ -60,7 +60,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-yolo_weights = os.path.join(ROOT_DIR, "desktop_client", "yolo11n.pt")
+yolo_weights = os.path.join(ROOT_DIR, "desktop_client", "yolo11s.pt")
+if not os.path.exists(yolo_weights):
+    yolo_weights = os.path.join(ROOT_DIR, "desktop_client", "yolo11n.pt")
 db_pickle = os.path.join(ROOT_DIR, "desktop_client", "known_faces.pkl")
 
 ai_engine = AIEngine(yolo_path=yolo_weights, db_path=db_pickle)

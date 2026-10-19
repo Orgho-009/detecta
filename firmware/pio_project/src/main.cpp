@@ -142,13 +142,13 @@ void setup() {
   config.grab_mode = CAMERA_GRAB_LATEST;
   if(psramFound()){
     Serial.printf("[PSRAM] Enabled. Free PSRAM: %d bytes\n", ESP.getFreePsram());
-    config.frame_size = FRAMESIZE_QVGA; // 320x240 for high 25-30 FPS throughput
+    config.frame_size = FRAMESIZE_VGA; // 640x480 for 4x resolution clarity
     config.jpeg_quality = 16;
     config.fb_count = 2;
     config.fb_location = CAMERA_FB_IN_PSRAM;      
   } else {
     Serial.println("[PSRAM] Not detected, using internal DRAM");
-    config.frame_size = FRAMESIZE_QVGA; // 320x240 fits cleanly in internal DRAM
+    config.frame_size = FRAMESIZE_HVGA; // 480x320 fallback
     config.jpeg_quality = 24;
     config.fb_count = 1;
     config.fb_location = CAMERA_FB_IN_DRAM;
