@@ -1,0 +1,24 @@
+# Python virtual environment
+.venv/
+venv/
+ENV/
+env/
+
+# PlatformIO build artifacts
+.pio/
+firmware/pio_project/.pio/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Alert backups
+backups/*.jpg
+
+# OS artifacts
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
