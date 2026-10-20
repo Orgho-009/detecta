@@ -35,11 +35,18 @@ class CameraStream:
         self.buffer_size = buffer_size
         self.frame = None
         self.stopped = False
+        self.paused = False
         self.new_frames = 0
         self.fps = 0.0
         self.last_frame_time = 0.0
         self.lock = threading.Lock()
         self.cv_stream = None
+
+    def pause(self):
+        self.paused = True
+
+    def resume(self):
+        self.paused = False
 
     def start(self):
         if self.is_http:
@@ -51,6 +58,9 @@ class CameraStream:
     def _run_http_stream(self):
         """Native chunked HTTP stream reader without OpenCV FFmpeg deadlock."""
         while not self.stopped:
+            if self.paused:
+                time.sleep(0.1)
+                continue
             try:
                 # Connect with short timeout so reconnections are instant
                 with requests.get(self.src, stream=True, timeout=(3.0, 5.0)) as r:
@@ -63,7 +73,7 @@ class CameraStream:
                     count = 0
 
                     for chunk in r.iter_content(chunk_size=16384):
-                        if self.stopped:
+                        if self.stopped or self.paused:
                             break
                         if not chunk:
                             continue

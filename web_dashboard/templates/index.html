@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Detecta — AI Security Intelligence Dashboard</title>
+  <title>Detecta — AI Security Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -53,21 +53,16 @@
   <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
   <!-- TOP APP BAR -->
-  <header class="glass-header sticky top-0 z-40 px-6 py-3.5 flex items-center justify-between">
-    <div class="flex items-center space-x-4">
-      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-        <i class="fa-solid fa-shield-halved text-white text-lg"></i>
+  <header class="glass-header sticky top-0 z-40 px-6 py-3 flex items-center justify-between">
+    <!-- Left: Pure Minimal DETECTA Brand -->
+    <div class="flex items-center space-x-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+        <i class="fa-solid fa-shield-halved text-white text-base"></i>
       </div>
-      <div>
-        <div class="flex items-center space-x-2">
-          <h1 class="text-lg font-bold tracking-tight text-white">DETECTA</h1>
-          <span class="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">AI Neural Monitor</span>
-        </div>
-        <p class="text-xs text-slate-400">Home-Intelligent Security Architecture</p>
-      </div>
+      <h1 class="text-xl font-extrabold tracking-tight text-white">DETECTA</h1>
     </div>
 
-    <!-- Active Navigation Tabs -->
+    <!-- Center: Clean Navigation Tabs (Live Stream, Face Database, Wi-Fi, Settings) -->
     <nav class="flex items-center bg-slate-900/80 p-1.5 rounded-xl border border-slate-800">
       <button onclick="switchTab('monitor')" id="tab-monitor" class="tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold text-white bg-cyan-600 shadow-md transition-all flex items-center space-x-2">
         <i class="fa-solid fa-video"></i>
@@ -77,9 +72,9 @@
         <i class="fa-solid fa-id-card"></i>
         <span>Face Database</span>
       </button>
-      <button onclick="switchTab('alerts')" id="tab-alerts" class="tab-btn px-4 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 transition-all flex items-center space-x-2">
-        <i class="fa-solid fa-bell"></i>
-        <span>Alert Gallery</span>
+      <button onclick="switchTab('wifi')" id="tab-wifi" class="tab-btn px-4 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 transition-all flex items-center space-x-2">
+        <i class="fa-solid fa-wifi"></i>
+        <span>Wi-Fi</span>
       </button>
       <button onclick="switchTab('settings')" id="tab-settings" class="tab-btn px-4 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 transition-all flex items-center space-x-2">
         <i class="fa-solid fa-gear"></i>
@@ -87,22 +82,27 @@
       </button>
     </nav>
 
-    <!-- Header Status Indicators -->
+    <!-- Right: Professional Status, FPS, Wi-Fi Host IP, and Restart Button -->
     <div class="flex items-center space-x-3">
-      <div id="cam-status-pill" class="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 text-xs">
-        <span id="cam-status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 pulse-dot"></span>
-        <span id="cam-status-text" class="font-medium text-slate-300">Connecting...</span>
+      <!-- Professional Status (Strictly No Emojis / No Colons) -->
+      <div id="cam-status-pill" class="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 text-xs transition-all shadow-sm">
+        <span id="cam-status-dot" class="w-2.5 h-2.5 rounded-full bg-[#28a745] pulse-dot"></span>
+        <span id="cam-status-text" class="font-bold text-[#28a745]">Camera Connected</span>
       </div>
 
+      <!-- FPS Counter -->
       <div class="px-3 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 text-xs flex items-center space-x-1.5 font-mono">
-        <span class="text-slate-400">FPS:</span>
+        <span class="text-slate-400">FPS</span>
         <span id="fps-badge" class="font-bold text-emerald-400">0.0</span>
       </div>
 
-      <div class="flex items-center bg-slate-900/90 rounded-full p-1 border border-slate-800">
-        <input type="text" id="quick-ip" placeholder="192.168.0.52" class="bg-transparent text-xs px-3 py-0.5 text-slate-200 focus:outline-none w-32 font-mono" onkeydown="if(event.key==='Enter') updateCameraIP()">
-        <button onclick="updateCameraIP()" class="px-3 py-1 rounded-full bg-cyan-600 hover:bg-cyan-500 text-[11px] font-semibold text-white transition-all shadow-md">
-          Connect
+      <!-- Wi-Fi Host / Camera IP & Restart Button -->
+      <div class="flex items-center bg-slate-900/90 rounded-full p-1 border border-slate-800 shadow-sm pl-3">
+        <span class="text-[10px] text-slate-400 font-semibold uppercase mr-1.5 tracking-wider">Wi-Fi Host</span>
+        <input type="text" id="quick-ip" placeholder="192.168.0.52" class="bg-transparent text-xs text-slate-200 focus:outline-none w-28 font-mono" onkeydown="if(event.key==='Enter') restartStream()">
+        <button id="btn-restart" onclick="restartStream()" class="px-3.5 py-1 rounded-full bg-cyan-600 hover:bg-cyan-500 text-[11px] font-bold text-white transition-all shadow-md flex items-center space-x-1.5">
+          <i class="fa-solid fa-arrows-rotate text-[10px]"></i>
+          <span>Restart</span>
         </button>
       </div>
     </div>
@@ -119,7 +119,7 @@
         <div class="lg:col-span-3 glass-card rounded-2xl overflow-hidden shadow-2xl relative flex flex-col">
           <div class="px-4 py-3 bg-slate-900/60 border-b border-white/5 flex items-center justify-between">
             <div class="flex items-center space-x-2.5 text-xs text-slate-300">
-              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span class="w-2 h-2 rounded-full bg-[#28a745]"></span>
               <span class="font-semibold text-white">Live Stream</span>
               <span class="text-slate-500">|</span>
               <span class="font-mono text-cyan-400 font-medium" id="stream-res-label">640x480 VGA</span>
@@ -128,15 +128,15 @@
               <span id="threat-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                 Area Secure
               </span>
-              <button onclick="reloadStream()" title="Refresh Live Stream" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 hover:text-white transition-all flex items-center space-x-1.5 border border-slate-700">
-                <i class="fa-solid fa-rotate text-cyan-400"></i>
-                <span class="text-[11px]">Reload</span>
+              <button onclick="restartStream()" title="Refresh Live Stream" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 hover:text-white transition-all flex items-center space-x-1.5 border border-slate-700">
+                <i class="fa-solid fa-arrows-rotate text-cyan-400"></i>
+                <span class="text-[11px]">Restart Stream</span>
               </button>
             </div>
           </div>
 
           <!-- Video Canvas / Image Element -->
-          <div class="relative flex-1 bg-black flex items-center justify-center min-h-[440px] p-2">
+          <div class="relative flex-1 bg-black flex items-center justify-center min-h-[460px] p-2">
             <img id="live-stream-img" src="/api/stream" alt="Live Camera Stream" class="w-full h-auto max-h-[560px] object-contain mx-auto rounded-xl shadow-2xl" onerror="handleStreamError(this)">
           </div>
 
@@ -144,7 +144,7 @@
           <div class="px-4 py-2.5 bg-slate-900/60 border-t border-white/5 flex items-center justify-between text-xs text-slate-400">
             <div class="flex items-center space-x-4">
               <span><i class="fa-solid fa-server mr-1.5 text-cyan-400"></i><span id="label-camera-ip">192.168.0.52:81</span></span>
-              <span><i class="fa-solid fa-microchip mr-1.5 text-cyan-400"></i>YOLO11s Detection (RTX 4050 CUDA)</span>
+              <span><i class="fa-solid fa-microchip mr-1.5 text-cyan-400"></i>YOLO11s Detection (NVIDIA RTX 4050 CUDA)</span>
             </div>
             <button onclick="takeSnapshot()" class="px-3.5 py-1.5 rounded-lg bg-cyan-700/80 hover:bg-cyan-600 text-slate-100 transition-all flex items-center space-x-1.5 shadow">
               <i class="fa-solid fa-camera"></i>
@@ -170,15 +170,15 @@
 
           <div class="glass-card rounded-2xl p-5 space-y-4">
             <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-              <span>Quick Enrollment</span>
+              <span>Quick Face Enroll</span>
               <i class="fa-solid fa-user-plus text-cyan-400"></i>
             </h3>
-            <p class="text-xs text-slate-400">Look directly into the camera and register identity instantly.</p>
+            <p class="text-xs text-slate-400">Register your face directly from the live camera stream.</p>
             <div class="space-y-2.5">
-              <input type="text" id="quick-enroll-name" placeholder="Enter Name (e.g. Rumon)" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-500" onkeydown="if(event.key==='Enter') enrollFromLiveFeed()">
+              <input type="text" id="quick-enroll-name" placeholder="Enter Full Name (e.g. Orgho)" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-500" onkeydown="if(event.key==='Enter') enrollFromLiveFeed()">
               <button onclick="enrollFromLiveFeed()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-xs font-semibold text-white shadow-lg transition-all flex items-center justify-center space-x-2">
                 <i class="fa-solid fa-camera"></i>
-                <span>Capture & Enroll Face</span>
+                <span>Capture & Register Face</span>
               </button>
             </div>
           </div>
@@ -186,18 +186,24 @@
       </div>
     </section>
 
-    <!-- VIEW 2: FACE DATABASE MANAGER -->
+    <!-- VIEW 2: FACE DATABASE MANAGER (With Photo Upload & Multiple Images Support) -->
     <section id="view-faces" class="hidden space-y-6">
       <div class="glass-card rounded-2xl p-6">
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
           <div>
-            <h2 class="text-lg font-bold text-white">Registered Biometric Faces</h2>
-            <p class="text-xs text-slate-400">Faces stored in 512-dimensional ArcFace vector embeddings.</p>
+            <h2 class="text-lg font-bold text-white">Face Database Manager</h2>
+            <p class="text-xs text-slate-400">InsightFace ArcFace 512-D Biometrics. Upload clear high-resolution photos for optimal recognition.</p>
           </div>
-          <button onclick="refreshFaces()" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 transition-all flex items-center space-x-2">
-            <i class="fa-solid fa-arrows-rotate"></i>
-            <span>Refresh</span>
-          </button>
+          <div class="flex items-center space-x-3">
+            <button onclick="openAddPersonSheet()" class="px-4 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-xs font-semibold text-white transition-all flex items-center space-x-2 shadow-md">
+              <i class="fa-solid fa-user-plus"></i>
+              <span>+ Add New Person</span>
+            </button>
+            <button onclick="refreshFaces()" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 transition-all flex items-center space-x-2">
+              <i class="fa-solid fa-arrows-rotate"></i>
+              <span>Refresh</span>
+            </button>
+          </div>
         </div>
         <div id="faces-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <!-- Populated by JavaScript -->
@@ -205,83 +211,178 @@
       </div>
     </section>
 
-    <!-- VIEW 3: ALERT LOGS & BACKUPS -->
-    <section id="view-alerts" class="hidden space-y-6">
-      <div class="glass-card rounded-2xl p-6">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-white/5">
-          <div>
-            <div class="flex items-center space-x-3">
-              <h2 class="text-lg font-bold text-white">Intrusion Snapshot Gallery</h2>
-              <span id="alerts-total-count" class="px-2.5 py-0.5 rounded-full text-xs font-mono bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">0 snapshots</span>
-            </div>
-            <p class="text-xs text-slate-400">High-resolution alert captures recorded to backups directory.</p>
+    <!-- VIEW 3: ESP32-CAM WI-FI SETTINGS (Clean, Minimalist, Vertically Aligned with Real Scan) -->
+    <section id="view-wifi" class="hidden space-y-6 max-w-4xl mx-auto">
+      <!-- Top Status Banner for ESP32-CAM Wi-Fi (Clean & Minimalist Alignment) -->
+      <div class="glass-card rounded-2xl p-5 border border-white/5 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center space-x-3.5">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center font-bold text-base border border-cyan-500/20 shadow-inner">
+            <i class="fa-solid fa-wifi"></i>
           </div>
+          <h2 class="text-base font-bold text-white tracking-tight leading-none">ESP32-CAM Wi-Fi Manager</h2>
+        </div>
 
-          <div class="flex flex-wrap items-center gap-2">
-            <!-- Select All Checkbox Button -->
-            <label class="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 cursor-pointer transition-all border border-slate-700">
-              <input type="checkbox" id="select-all-alerts" onchange="toggleSelectAllAlerts(this.checked)" class="rounded text-cyan-600 focus:ring-0">
-              <span>Select All</span>
-            </label>
-
-            <!-- Delete Selected Button -->
-            <button id="btn-delete-selected" onclick="deleteSelectedAlerts()" disabled class="px-3.5 py-1.5 rounded-xl bg-slate-800 text-slate-500 cursor-not-allowed text-xs font-medium transition-all flex items-center space-x-2 border border-slate-700">
-              <i class="fa-solid fa-trash-can"></i>
-              <span id="label-delete-selected">Delete Selected</span>
-            </button>
-
-            <!-- Clear All Button -->
-            <button onclick="clearAllAlerts()" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-900/40 text-xs font-medium text-slate-300 hover:text-rose-200 transition-all flex items-center space-x-2 border border-slate-700">
-              <i class="fa-solid fa-broom"></i>
-              <span>Clear All</span>
-            </button>
-
-            <!-- Refresh Button -->
-            <button onclick="refreshAlerts()" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 transition-all flex items-center space-x-2 border border-slate-700">
-              <i class="fa-solid fa-arrows-rotate"></i>
-              <span>Refresh</span>
-            </button>
+        <!-- Camera Wi-Fi Telemetry (ESP32 only, strictly no PC details) -->
+        <div class="flex items-center space-x-3 text-xs">
+          <div class="px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col items-start">
+            <span class="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Active SSID</span>
+            <span id="esp-active-ssid" class="font-bold text-cyan-400 font-mono">ORGHO</span>
+          </div>
+          <div class="px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col items-start">
+            <span class="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Signal</span>
+            <span id="esp-signal" class="font-bold text-emerald-400 font-mono">-62 dBm</span>
+          </div>
+          <div class="px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col items-start">
+            <span class="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">IP Address</span>
+            <span id="esp-ip-badge" class="font-bold text-slate-200 font-mono">192.168.0.52:81</span>
           </div>
         </div>
-        <div id="alerts-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          <!-- Populated by JavaScript -->
+      </div>
+
+      <!-- Symmetrical Dual Columns: KNOWN NETWORKS & OTHER NETWORKS -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Column 1: KNOWN NETWORKS -->
+        <div class="glass-card rounded-2xl p-5 border border-white/5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between pb-3 border-b border-white/5 mb-3">
+              <span class="text-xs font-bold uppercase tracking-wider text-cyan-400">KNOWN NETWORKS</span>
+              <span class="text-[10px] text-slate-500 font-mono">Saved on Module</span>
+            </div>
+            <div id="known-networks-list" class="space-y-2.5 min-h-[220px]">
+              <!-- Populated dynamically from module -->
+            </div>
+          </div>
+          <p class="text-[10px] text-slate-500 mt-3 pt-2 border-t border-white/5">Saved in ESP32 memory for automated reconnection.</p>
+        </div>
+
+        <!-- Column 2: OTHER NETWORKS (Real surrounding Wi-Fi scan, Zero Demo Data) -->
+        <div class="glass-card rounded-2xl p-5 border border-white/5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between pb-3 border-b border-white/5 mb-3">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-300">OTHER NETWORKS</span>
+              <button onclick="scanWifiNetworks()" id="btn-scan-wifi" class="text-xs text-cyan-400 hover:text-cyan-300 font-medium flex items-center space-x-1.5">
+                <i class="fa-solid fa-rotate text-[11px]" id="scan-icon"></i>
+                <span id="scan-label">Scan</span>
+              </button>
+            </div>
+            <div id="other-networks-list" class="space-y-2.5 min-h-[220px]">
+              <!-- Real scanned networks will be populated here -->
+            </div>
+          </div>
+          <p class="text-[10px] text-slate-500 mt-3 pt-2 border-t border-white/5">Available router access points in camera range.</p>
+        </div>
+      </div>
+
+      <!-- Manual Connect Card (Connect to Any Custom Wi-Fi) -->
+      <div class="glass-card rounded-2xl p-5 border border-white/5 space-y-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center space-x-2">
+          <i class="fa-solid fa-plus-circle text-cyan-400"></i>
+          <span>Connect Camera to Custom Wi-Fi Network</span>
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <input type="text" id="manual-wifi-ssid" placeholder="Network Name (SSID)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-500">
+          </div>
+          <div class="relative">
+            <input type="password" id="manual-wifi-pass" placeholder="Wi-Fi Password" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 font-mono pr-8">
+            <button type="button" onclick="togglePasswordVisibility('manual-wifi-pass', this)" class="absolute right-2.5 top-2.5 text-slate-400 hover:text-white text-xs">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+          <div>
+            <button onclick="manualConnectCameraWifi()" class="w-full py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-xs font-bold text-white transition-all shadow flex items-center justify-center space-x-2">
+              <i class="fa-solid fa-link"></i>
+              <span>Connect Camera</span>
+            </button>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- VIEW 4: SYSTEM SETTINGS -->
-    <section id="view-settings" class="hidden space-y-6 max-w-2xl mx-auto">
+    <!-- VIEW 4: SIMPLIFIED SETTINGS -->
+    <section id="view-settings" class="hidden space-y-6 max-w-xl mx-auto">
       <div class="glass-card rounded-2xl p-6 space-y-5">
-        <h2 class="text-lg font-bold text-white border-b border-white/5 pb-3">System Configuration</h2>
+        <div class="border-b border-white/5 pb-3 flex items-center justify-between">
+          <div>
+            <h2 class="text-lg font-bold text-white">Camera Configuration</h2>
+            <p class="text-xs text-slate-400">Configure ESP32-CAM stream target and network connection.</p>
+          </div>
+          <div class="w-8 h-8 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
+            <i class="fa-solid fa-video text-sm"></i>
+          </div>
+        </div>
+        
         <div class="space-y-4">
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1.5">ESP32-CAM IP Address (or 0 for Webcam)</label>
-            <input type="text" id="setting-cam-ip" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-cyan-500">
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5">ESP32-CAM IP Address</label>
+            <input type="text" id="setting-cam-ip" placeholder="192.168.0.52" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-cyan-500">
+            <p class="text-[11px] text-slate-500 mt-1">Default video stream port is 81 (e.g. http://192.168.0.52:81/stream).</p>
           </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1.5">Telegram Bot Token</label>
-            <input type="text" id="setting-tg-token" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-cyan-500">
+
+          <div class="pt-3 border-t border-white/5 flex items-center justify-end space-x-3">
+            <button onclick="saveAllSettings()" class="px-6 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-xs font-semibold text-white shadow-lg transition-all flex items-center space-x-2">
+              <i class="fa-solid fa-floppy-disk"></i>
+              <span>Save & Reconnect</span>
+            </button>
           </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1.5">Telegram Chat ID</label>
-            <input type="text" id="setting-tg-chat" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-cyan-500">
-          </div>
-          <button onclick="saveAllSettings()" class="w-full py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-xs font-semibold text-white shadow-lg transition-all flex items-center justify-center space-x-2">
-            <i class="fa-solid fa-floppy-disk"></i>
-            <span>Save Settings & Connect</span>
-          </button>
         </div>
       </div>
     </section>
 
   </main>
 
+  <!-- ================= IN-APP MODAL SHEETS ================= -->
+
+  <!-- Add New Person / Upload Photo Modal Sheet -->
+  <div id="add-person-modal-sheet" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="glass-card rounded-2xl w-full max-w-md overflow-hidden shadow-2xl border border-white/10 flex flex-col">
+      <div class="px-5 py-4 bg-slate-900/90 border-b border-white/5 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <i class="fa-solid fa-id-badge text-cyan-400"></i>
+          <h3 class="text-sm font-bold text-white">Enroll Identity</h3>
+        </div>
+        <button onclick="closeAddPersonSheet()" class="text-slate-400 hover:text-white text-xs">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+      <div class="p-5 space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Full Name</label>
+          <input type="text" id="modal-person-name" placeholder="Enter Full Name (e.g. Orgho)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-500">
+        </div>
+        
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Upload Photo from Computer (Clear Portrait)</label>
+          <input type="file" id="modal-person-file" accept="image/*" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3.5 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-cyan-600 file:text-white hover:file:bg-cyan-500 cursor-pointer">
+          <p class="text-[10px] text-slate-500 mt-1">Upload a clear JPG or PNG photo for highest facial recognition accuracy.</p>
+        </div>
+
+        <div class="pt-2 flex items-center justify-end space-x-2">
+          <button onclick="closeAddPersonSheet()" class="px-4 py-2 rounded-xl bg-slate-800 text-xs font-medium text-slate-300 hover:text-white transition-all">
+            Cancel
+          </button>
+          <button onclick="submitNewPerson()" class="px-5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-xs font-bold text-white transition-all shadow flex items-center space-x-1.5">
+            <i class="fa-solid fa-check"></i>
+            <span>Save & Enroll</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload Photo to Existing Person (Hidden input) -->
+  <input type="file" id="upload-existing-photo-input" accept="image/*" class="hidden" onchange="handleExistingPhotoSelected(this)">
+
   <script>
+    let initialIpLoaded = false;
+    let targetPersonForUpload = null;
+    let isStreamPaused = false;
+
     // Toast Notification System
     function showToast(message, type = 'info') {
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
-      const bg = type === 'success' ? 'bg-emerald-600/90' : type === 'error' ? 'bg-rose-600/90' : 'bg-cyan-600/90';
+      const bg = type === 'success' ? 'bg-[#28a745]/90' : type === 'error' ? 'bg-[#dc3545]/90' : 'bg-cyan-600/90';
       const icon = type === 'success' ? 'fa-circle-check' : type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-info';
       toast.className = `${bg} text-white text-xs px-4 py-2.5 rounded-xl shadow-xl backdrop-blur-md flex items-center space-x-2.5 pointer-events-auto transition-all duration-300 transform translate-y-2 opacity-0`;
       toast.innerHTML = `<i class="fa-solid ${icon}"></i><span>${message}</span>`;
@@ -296,42 +397,102 @@
       }, 3500);
     }
 
+    // Professional Status Typography (Strictly No Emojis / No Colons)
+    function updateStatusBadge(statusType) {
+      const dot = document.getElementById('cam-status-dot');
+      const txt = document.getElementById('cam-status-text');
+      const pill = document.getElementById('cam-status-pill');
+
+      if (statusType === 'connected') {
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-[#28a745] pulse-dot';
+        txt.innerText = 'Camera Connected';
+        txt.className = 'font-bold text-[#28a745]';
+        pill.style.borderColor = 'rgba(40, 167, 69, 0.4)';
+      } else if (statusType === 'offline') {
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-[#dc3545]';
+        txt.innerText = 'Camera Offline';
+        txt.className = 'font-bold text-[#dc3545]';
+        pill.style.borderColor = 'rgba(220, 53, 69, 0.4)';
+      } else {
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-[#ffc107] pulse-dot';
+        txt.innerText = 'Camera Searching...';
+        txt.className = 'font-bold text-[#ffc107]';
+        pill.style.borderColor = 'rgba(255, 193, 7, 0.4)';
+      }
+    }
+
+    // Tab Switching (4 Tabs: Live Stream, Face Database, Wi-Fi, Settings)
     function switchTab(tab) {
-      ['monitor', 'faces', 'alerts', 'settings'].forEach(t => {
-        document.getElementById(`view-${t}`).classList.add('hidden');
+      ['monitor', 'faces', 'wifi', 'settings'].forEach(t => {
+        const el = document.getElementById(`view-${t}`);
+        if (el) el.classList.add('hidden');
         const btn = document.getElementById(`tab-${t}`);
-        btn.classList.remove('bg-cyan-600', 'text-white', 'shadow-md');
-        btn.classList.add('text-slate-400');
+        if (btn) {
+          btn.classList.remove('bg-cyan-600', 'text-white', 'shadow-md');
+          btn.classList.add('text-slate-400');
+        }
       });
-      document.getElementById(`view-${tab}`).classList.remove('hidden');
+      const targetView = document.getElementById(`view-${tab}`);
+      if (targetView) targetView.classList.remove('hidden');
       const activeBtn = document.getElementById(`tab-${tab}`);
-      activeBtn.classList.add('bg-cyan-600', 'text-white', 'shadow-md');
-      activeBtn.classList.remove('text-slate-400');
+      if (activeBtn) {
+        activeBtn.classList.add('bg-cyan-600', 'text-white', 'shadow-md');
+        activeBtn.classList.remove('text-slate-400');
+      }
+
+      if (tab === 'wifi') {
+        // Stream-Pause State Machine: pause video stream to release Port 81 for Wi-Fi config
+        isStreamPaused = true;
+        const img = document.getElementById('live-stream-img');
+        if (img) img.src = '';
+
+        // Clearly indicate Stream Paused for Wi-Fi Configuration in top navigation
+        const dot = document.getElementById('cam-status-dot');
+        const txt = document.getElementById('cam-status-text');
+        const pill = document.getElementById('cam-status-pill');
+        if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-cyan-400';
+        if (txt) {
+          txt.innerText = 'Stream Paused (Wi-Fi Config)';
+          txt.className = 'font-bold text-cyan-400';
+        }
+        if (pill) pill.style.borderColor = 'rgba(6, 182, 212, 0.4)';
+        const fpsBadge = document.getElementById('fps-badge');
+        if (fpsBadge) fpsBadge.innerText = '--';
+
+        // Pause backend camera stream so wireless adapter is completely free to scan radio channels
+        fetch('/api/stream/pause', { method: 'POST' }).catch(() => {});
+
+        loadCameraWifi();
+      } else {
+        if (isStreamPaused) {
+          // Resume video stream smoothly after 300ms delay
+          fetch('/api/stream/resume', { method: 'POST' }).catch(() => {});
+          setTimeout(() => {
+            isStreamPaused = false;
+            const img = document.getElementById('live-stream-img');
+            if (img) img.src = '/api/stream?t=' + Date.now();
+            pollStatus();
+          }, 300);
+        }
+      }
 
       if (tab === 'faces') refreshFaces();
-      if (tab === 'alerts') refreshAlerts();
       if (tab === 'settings') loadSettings();
     }
 
-    let initialIpLoaded = false;
-
+    // Status Polling Loop
     async function pollStatus() {
+      if (isStreamPaused) return;
       try {
         const res = await fetch('/api/status');
         const data = await res.json();
         
         document.getElementById('fps-badge').innerText = data.fps.toFixed(1);
-        const dot = document.getElementById('cam-status-dot');
-        const txt = document.getElementById('cam-status-text');
         
         if (data.status === 'connected') {
-          dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 pulse-dot';
-          txt.innerText = 'Connected';
-          txt.className = 'font-medium text-emerald-400';
+          updateStatusBadge('connected');
         } else {
-          dot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
-          txt.innerText = 'Offline';
-          txt.className = 'font-medium text-rose-400';
+          updateStatusBadge('offline');
         }
 
         // Render dynamic multi-object inventory
@@ -345,7 +506,6 @@
             </div>`;
         } else {
           let html = '';
-          // Show Human first if present
           if (inv['Human']) {
             html += `
               <div class="flex items-center justify-between p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 shadow-sm">
@@ -355,7 +515,6 @@
                 <span class="font-mono text-base font-bold text-amber-400">${inv['Human']}</span>
               </div>`;
           }
-          // Show other objects
           keys.forEach(k => {
             if (k === 'Human') return;
             let icon = 'fa-cube';
@@ -364,7 +523,7 @@
             else if (lk.includes('mouse')) icon = 'fa-computer-mouse';
             else if (lk.includes('laptop')) icon = 'fa-laptop';
             else if (lk.includes('cup') || lk.includes('mug')) icon = 'fa-mug-saucer';
-            else if (lk.includes('clock')) icon = 'fa-clock';
+            else if (lk.includes('clock') || lk.includes('watch')) icon = 'fa-clock';
             else if (lk.includes('phone')) icon = 'fa-mobile-screen-button';
             else if (lk.includes('bear') || lk.includes('doll')) icon = 'fa-paw';
             else if (lk.includes('plant') || lk.includes('flower') || lk.includes('vase')) icon = 'fa-leaf';
@@ -407,42 +566,45 @@
     setInterval(pollStatus, 1000);
     pollStatus();
 
-    function reloadStream() {
-      const img = document.getElementById('live-stream-img');
-      img.src = '/api/stream?t=' + Date.now();
-      showToast('Live stream reloaded', 'info');
+    // Restart Stream Functionality
+    async function restartStream() {
+      const btn = document.getElementById('btn-restart');
+      let targetIp = document.getElementById('quick-ip').value.trim();
+      if (!targetIp) targetIp = document.getElementById('quick-ip').placeholder;
+
+      updateStatusBadge('searching');
+      btn.disabled = true;
+      showToast(`Restarting stream from ${targetIp}...`, 'info');
+
+      const fd = new FormData();
+      fd.append('ip', targetIp);
+
+      try {
+        const res = await fetch('/api/camera/ip', { method: 'POST', body: fd });
+        if (res.ok) {
+          showToast(`Stream restarted successfully!`, 'success');
+          document.getElementById('quick-ip').value = targetIp;
+          document.getElementById('label-camera-ip').innerText = `${targetIp}:81`;
+          updateStatusBadge('connected');
+          const img = document.getElementById('live-stream-img');
+          img.src = '/api/stream?t=' + Date.now();
+        } else {
+          updateStatusBadge('offline');
+          showToast('Failed to connect to camera', 'error');
+        }
+      } catch (err) {
+        updateStatusBadge('offline');
+        showToast('Stream error: ' + err, 'error');
+      } finally {
+        btn.disabled = false;
+      }
     }
 
     function handleStreamError(img) {
+      if (isStreamPaused) return;
       setTimeout(() => {
-        img.src = '/api/stream?t=' + Date.now();
-      }, 1000);
-    }
-
-    async function updateCameraIP() {
-      let ip = document.getElementById('quick-ip').value.trim();
-      if (!ip) {
-        ip = document.getElementById('quick-ip').placeholder;
-      }
-      showToast(`Connecting to ${ip}...`, 'info');
-      const fd = new FormData();
-      fd.append('ip', ip);
-      try {
-        const res = await fetch('/api/camera/ip', { method: 'POST', body: fd });
-        const data = await res.json();
-        if (res.ok) {
-          showToast(data.message || `Switched to ${ip}`, 'success');
-          document.getElementById('quick-ip').value = ip;
-          document.getElementById('label-camera-ip').innerText = `${ip}:81`;
-          setTimeout(() => {
-            document.getElementById('live-stream-img').src = '/api/stream?t=' + Date.now();
-          }, 300);
-        } else {
-          showToast('Failed to change IP', 'error');
-        }
-      } catch (e) {
-        showToast('Connection error: ' + e, 'error');
-      }
+        if (!isStreamPaused) img.src = '/api/stream?t=' + Date.now();
+      }, 1200);
     }
 
     async function takeSnapshot() {
@@ -460,26 +622,387 @@
       }
     }
 
+    // ----------------- REAL ESP32-CAM WI-FI SETTINGS (VIEW-WIFI) -----------------
+    async function loadCameraWifi() {
+      try {
+        const res = await fetch('/api/camera/wifi');
+        const data = await res.json();
+        
+        document.getElementById('esp-active-ssid').innerText = data.ssid || 'ORGHO';
+        document.getElementById('esp-signal').innerText = data.rssi || '-62 dBm';
+        document.getElementById('esp-ip-badge').innerText = `${data.ip}:81`;
+
+        // Render Known Networks (Only real networks)
+        const knownList = document.getElementById('known-networks-list');
+        knownList.innerHTML = '';
+        const known = data.known_networks || ['ORGHO'];
+        const activeSsid = data.ssid || 'ORGHO';
+
+        known.forEach(net => {
+          const isCurrent = (net === activeSsid);
+          const row = document.createElement('div');
+          row.className = 'flex items-center justify-between p-2.5 rounded-lg bg-slate-800/80 border border-white/5';
+          row.innerHTML = `
+            <div class="flex items-center space-x-2.5">
+              ${isCurrent ? '<i class="fa-solid fa-circle-check text-xs text-[#28a745]"></i>' : '<i class="fa-solid fa-wifi text-xs text-slate-400"></i>'}
+              <span class="text-xs font-semibold ${isCurrent ? 'text-white' : 'text-slate-300'}">${net}</span>
+              ${isCurrent ? '<span class="text-[9px] bg-emerald-500/10 text-[#28a745] px-1.5 py-0.2 rounded border border-emerald-500/20 font-bold">Active</span>' : ''}
+            </div>
+            <div class="flex items-center space-x-1.5">
+              ${!isCurrent ? `<button onclick="connectCameraToNetwork('${net}', '')" class="text-[11px] text-cyan-400 hover:text-white px-2 py-0.5 rounded bg-cyan-500/10 hover:bg-cyan-600 transition-all">Connect</button>` : ''}
+              ${!isCurrent ? `<button onclick="forgetCameraNetwork('${net}')" class="text-[11px] text-slate-400 hover:text-rose-400 px-2 py-0.5 rounded bg-slate-700/50 hover:bg-rose-500/10 transition-all">Forget</button>` : ''}
+            </div>
+          `;
+          knownList.appendChild(row);
+        });
+
+        // Trigger real scan for surrounding Wi-Fi networks
+        scanWifiNetworks();
+
+      } catch (e) {
+        showToast('Error loading camera Wi-Fi: ' + e, 'error');
+      }
+    }
+
+    // Real Wi-Fi Network Scan without Demo Data
+    async function scanWifiNetworks() {
+      const otherList = document.getElementById('other-networks-list');
+      const scanIcon = document.getElementById('scan-icon');
+      const scanLabel = document.getElementById('scan-label');
+
+      if (scanIcon) scanIcon.className = 'fa-solid fa-spinner fa-spin text-[11px]';
+      if (scanLabel) scanLabel.innerText = 'Scanning...';
+
+      otherList.innerHTML = `
+        <div class="py-10 text-center text-xs text-slate-400 flex flex-col items-center justify-center space-y-2">
+          <i class="fa-solid fa-spinner fa-spin text-cyan-400 text-base"></i>
+          <span>Scanning surrounding wireless networks...</span>
+        </div>
+      `;
+
+      try {
+        const res = await fetch('/api/camera/wifi/scan');
+        const data = await res.json();
+        const networks = data.networks || [];
+        renderRealScannedNetworks(networks);
+      } catch (e) {
+        otherList.innerHTML = `<div class="p-4 rounded-xl bg-slate-900/40 border border-white/5 text-center text-xs text-rose-400">Scan failed: ${e}</div>`;
+      } finally {
+        if (scanIcon) scanIcon.className = 'fa-solid fa-rotate text-[11px]';
+        if (scanLabel) scanLabel.innerText = 'Scan';
+      }
+    }
+
+    function renderRealScannedNetworks(networks) {
+      const otherList = document.getElementById('other-networks-list');
+      otherList.innerHTML = '';
+      const activeSsid = document.getElementById('esp-active-ssid').innerText.trim();
+
+      // Filter out active network from 'Other Networks'
+      const filtered = networks.filter(n => n.ssid && n.ssid !== activeSsid);
+
+      if (filtered.length === 0) {
+        otherList.innerHTML = `
+          <div class="py-10 text-center text-xs text-slate-500 space-y-1">
+            <i class="fa-solid fa-wifi text-slate-600 text-lg block mb-2"></i>
+            <span class="block text-slate-400 font-semibold">No other Wi-Fi networks detected</span>
+            <p class="text-[10px] text-slate-600">Only '${activeSsid}' is currently active in range. Click 'Scan' to refresh.</p>
+          </div>`;
+        return;
+      }
+
+      filtered.forEach((net, idx) => {
+        const pwdId = `pwd-net-${idx}`;
+        const card = document.createElement('div');
+        card.className = 'p-3 rounded-lg bg-slate-800/50 border border-white/5 space-y-2';
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <i class="fa-solid fa-wifi text-xs text-cyan-400"></i>
+              <span class="text-xs font-semibold text-slate-200">${net.ssid}</span>
+            </div>
+            <div class="flex items-center space-x-2 text-[10px] text-slate-400">
+              <span>${net.signal || ''}</span>
+              <span class="px-1.5 py-0.5 rounded bg-slate-700/60 font-mono text-[9px]">${net.auth || 'WPA2'}</span>
+            </div>
+          </div>
+          <div class="flex items-center space-x-2">
+            <div class="relative flex-1">
+              <input type="password" id="${pwdId}" placeholder="Enter Wi-Fi Password" class="w-full bg-slate-950/70 border border-slate-700 rounded px-2.5 py-1 text-xs text-white font-mono focus:outline-none focus:border-cyan-500 pr-7">
+              <button type="button" onclick="togglePasswordVisibility('${pwdId}', this)" class="absolute right-2 top-1.5 text-slate-400 hover:text-white text-xs">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+            <button onclick="connectCameraToNetwork('${net.ssid}', '${pwdId}')" class="px-3.5 py-1 rounded bg-cyan-600 hover:bg-cyan-500 text-xs font-semibold text-white transition-all shadow flex items-center space-x-1">
+              <i class="fa-solid fa-link text-[10px]"></i>
+              <span>Connect</span>
+            </button>
+          </div>
+        `;
+        otherList.appendChild(card);
+      });
+    }
+
+    function togglePasswordVisibility(inputId, btn) {
+      const field = document.getElementById(inputId);
+      const icon = btn.querySelector('i');
+      if (field.type === 'password') {
+        field.type = 'text';
+        icon.className = 'fa-solid fa-eye-slash';
+      } else {
+        field.type = 'password';
+        icon.className = 'fa-solid fa-eye';
+      }
+    }
+
+    async function connectCameraToNetwork(ssid, pwdFieldId) {
+      let pwd = '';
+      if (pwdFieldId && document.getElementById(pwdFieldId)) {
+        pwd = document.getElementById(pwdFieldId).value;
+      }
+      showToast(`Instructing ESP32-CAM to connect to '${ssid}'...`, 'info');
+
+      const fd = new FormData();
+      fd.append('ssid', ssid);
+      fd.append('password', pwd);
+
+      try {
+        const res = await fetch('/api/camera/wifi/connect', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(data.message || `Credentials sent for ${ssid}`, 'success');
+          loadCameraWifi();
+        } else {
+          showToast('Failed to send Wi-Fi credentials', 'error');
+        }
+      } catch (err) {
+        showToast('Error connecting: ' + err, 'error');
+      }
+    }
+
+    async function manualConnectCameraWifi() {
+      const ssid = document.getElementById('manual-wifi-ssid').value.trim();
+      const pwd = document.getElementById('manual-wifi-pass').value;
+      if (!ssid) return showToast('Please enter Wi-Fi SSID', 'error');
+
+      await connectCameraToNetwork(ssid, 'manual-wifi-pass');
+      document.getElementById('manual-wifi-ssid').value = '';
+      document.getElementById('manual-wifi-pass').value = '';
+    }
+
+    async function forgetCameraNetwork(ssid) {
+      const fd = new FormData();
+      fd.append('ssid', ssid);
+      try {
+        const res = await fetch('/api/camera/wifi/forget', { method: 'POST', body: fd });
+        if (res.ok) {
+          showToast(`Network '${ssid}' forgotten from ESP32 list`, 'info');
+          loadCameraWifi();
+        }
+      } catch (e) {}
+    }
+
+    // ----------------- FACE DATABASE MANAGER -----------------
+    function openAddPersonSheet() {
+      document.getElementById('add-person-modal-sheet').classList.remove('hidden');
+    }
+
+    function closeAddPersonSheet() {
+      document.getElementById('add-person-modal-sheet').classList.add('hidden');
+      document.getElementById('modal-person-name').value = '';
+      document.getElementById('modal-person-file').value = '';
+    }
+
+    async function submitNewPerson() {
+      const name = document.getElementById('modal-person-name').value.trim();
+      if (!name) return showToast('Please enter full name', 'error');
+
+      const fileInput = document.getElementById('modal-person-file');
+      
+      if (fileInput.files.length > 0) {
+        // Upload high-res photo from computer
+        const file = fileInput.files[0];
+        showToast(`Uploading photo for '${name}'...`, 'info');
+        const fd = new FormData();
+        fd.append('name', name);
+        fd.append('file', file);
+
+        try {
+          const res = await fetch('/api/faces/upload', { method: 'POST', body: fd });
+          const data = await res.json();
+          if (res.ok) {
+            showToast(data.message || `Enrolled ${name} successfully!`, 'success');
+            closeAddPersonSheet();
+            refreshFaces();
+          } else {
+            showToast(data.detail || 'No face detected in uploaded photo.', 'error');
+          }
+        } catch (err) {
+          showToast('Upload error: ' + err, 'error');
+        }
+      } else {
+        // Fallback: Enroll from live camera feed
+        showToast(`Enrolling '${name}' from live camera feed...`, 'info');
+        const fd = new FormData();
+        fd.append('name', name);
+        try {
+          const res = await fetch('/api/faces/enroll_live', { method: 'POST', body: fd });
+          const data = await res.json();
+          if (res.ok) {
+            showToast(data.message || `Enrolled ${name} successfully!`, 'success');
+            closeAddPersonSheet();
+            refreshFaces();
+          } else {
+            showToast(data.detail || 'No face visible in camera. Or upload a photo file.', 'error');
+          }
+        } catch (err) {
+          showToast('Enrollment error: ' + err, 'error');
+        }
+      }
+    }
+
+    function triggerUploadPhoto(personName) {
+      targetPersonForUpload = personName;
+      const fileInput = document.getElementById('upload-existing-photo-input');
+      fileInput.value = '';
+      fileInput.click();
+    }
+
+    async function handleExistingPhotoSelected(input) {
+      if (!input.files || input.files.length === 0 || !targetPersonForUpload) return;
+      const file = input.files[0];
+      showToast(`Adding photo for '${targetPersonForUpload}'...`, 'info');
+
+      const fd = new FormData();
+      fd.append('name', targetPersonForUpload);
+      fd.append('file', file);
+
+      try {
+        const res = await fetch('/api/faces/upload', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(data.message || `Added photo for ${targetPersonForUpload}!`, 'success');
+          refreshFaces();
+        } else {
+          showToast(data.detail || 'Failed to detect face in photo.', 'error');
+        }
+      } catch (err) {
+        showToast('Error uploading: ' + err, 'error');
+      } finally {
+        targetPersonForUpload = null;
+      }
+    }
+
+    async function enrollFromLiveFeed() {
+      const name = document.getElementById('quick-enroll-name').value.trim();
+      if (!name) return showToast('Please enter a name first', 'error');
+      showToast(`Enrolling '${name}' from camera stream...`, 'info');
+      const fd = new FormData();
+      fd.append('name', name);
+      try {
+        const res = await fetch('/api/faces/enroll_live', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(data.message, 'success');
+          document.getElementById('quick-enroll-name').value = '';
+          refreshFaces();
+        } else {
+          showToast(data.detail || 'Enrollment failed. Face must be visible.', 'error');
+        }
+      } catch (e) {
+        showToast('Enrollment error: ' + e, 'error');
+      }
+    }
+
+    async function refreshFaces() {
+      const res = await fetch('/api/faces');
+      const faces = await res.json();
+      const grid = document.getElementById('faces-grid');
+      grid.innerHTML = '';
+      if (faces.length === 0) {
+        grid.innerHTML = '<p class="text-xs text-slate-500 col-span-full py-8 text-center">No faces enrolled yet. Click "+ Add New Person" to upload photos.</p>';
+        return;
+      }
+      faces.forEach(f => {
+        const card = document.createElement('div');
+        card.className = 'glass-card rounded-xl p-4 flex flex-col justify-between border border-white/5 hover:border-cyan-500/30 transition-all space-y-3';
+        card.innerHTML = `
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-base uppercase shadow-inner">
+              ${f.name.charAt(0)}
+            </div>
+            <div>
+              <span class="text-sm font-bold text-white block">${f.name}</span>
+              <span class="text-[10px] text-[#28a745] font-semibold block">ArcFace 512-D Verified</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between pt-2 border-t border-white/5 text-xs">
+            <button onclick="triggerUploadPhoto('${f.name}')" title="Upload additional clear photo" class="px-2.5 py-1 rounded-lg bg-cyan-600/20 hover:bg-cyan-600 text-cyan-300 hover:text-white transition-all flex items-center space-x-1 border border-cyan-500/20">
+              <i class="fa-solid fa-cloud-arrow-up text-[11px]"></i>
+              <span>Upload Photo</span>
+            </button>
+            <div class="flex items-center space-x-1">
+              <button onclick="renameFacePrompt('${f.name}')" title="Rename" class="text-slate-400 hover:text-amber-400 p-1.5 rounded-lg hover:bg-amber-500/10 transition-all">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <button onclick="deleteFace('${f.name}')" title="Delete" class="text-slate-400 hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-500/10 transition-all">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    async function renameFacePrompt(oldName) {
+      const newName = prompt(`Enter new name for '${oldName}':`, oldName);
+      if (!newName || newName.trim() === oldName || !newName.trim()) return;
+
+      const fd = new FormData();
+      fd.append('old_name', oldName);
+      fd.append('new_name', newName.trim());
+
+      try {
+        const res = await fetch('/api/faces/rename', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(data.message || `Renamed to ${newName.trim()}`, 'success');
+          refreshFaces();
+        } else {
+          showToast(data.detail || 'Failed to rename', 'error');
+        }
+      } catch (err) {
+        showToast('Rename error: ' + err, 'error');
+      }
+    }
+
+    async function deleteFace(name) {
+      if (!confirm(`Delete biometric face profile for '${name}'?`)) return;
+      const res = await fetch(`/api/faces/${name}`, { method: 'DELETE' });
+      if (res.ok) {
+        showToast(`Deleted face profile: ${name}`, 'success');
+        refreshFaces();
+      } else {
+        showToast('Failed to delete face', 'error');
+      }
+    }
+
+    // ----------------- CONFIGURATION SETTINGS -----------------
     async function loadSettings() {
       try {
         const res = await fetch('/api/config');
         const cfg = await res.json();
-        document.getElementById('setting-cam-ip').value = cfg.camera_ip || '';
-        document.getElementById('setting-tg-token').value = cfg.telegram_token || '';
-        document.getElementById('setting-tg-chat').value = cfg.telegram_chat_id || '';
+        document.getElementById('setting-cam-ip').value = cfg.camera_ip || '192.168.0.52';
       } catch (e) {}
     }
 
     async function saveAllSettings() {
       const camIp = document.getElementById('setting-cam-ip').value.trim();
-      const tgToken = document.getElementById('setting-tg-token').value.trim();
-      const tgChat = document.getElementById('setting-tg-chat').value.trim();
       if (!camIp) return showToast('Camera IP is required', 'error');
 
       const fd = new FormData();
       fd.append('camera_ip', camIp);
-      fd.append('telegram_token', tgToken);
-      fd.append('telegram_chat_id', tgChat);
 
       try {
         const res = await fetch('/api/config', { method: 'POST', body: fd });
@@ -496,225 +1019,6 @@
         }
       } catch (e) {
         showToast('Error: ' + e, 'error');
-      }
-    }
-
-    async function refreshFaces() {
-      const res = await fetch('/api/faces');
-      const faces = await res.json();
-      const grid = document.getElementById('faces-grid');
-      grid.innerHTML = '';
-      if (faces.length === 0) {
-        grid.innerHTML = '<p class="text-xs text-slate-500 col-span-full">No faces enrolled yet. Use Quick Enrollment to register identity.</p>';
-        return;
-      }
-      faces.forEach(f => {
-        const card = document.createElement('div');
-        card.className = 'glass-card rounded-xl p-4 flex items-center justify-between';
-        card.innerHTML = `
-          <div class="flex items-center space-x-3">
-            <div class="w-8 h-8 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-xs uppercase">
-              ${f.name.charAt(0)}
-            </div>
-            <span class="text-sm font-semibold text-white">${f.name}</span>
-          </div>
-          <button onclick="deleteFace('${f.name}')" class="text-slate-500 hover:text-rose-400 text-xs transition-all p-1.5 rounded-lg hover:bg-rose-500/10">
-            <i class="fa-solid fa-trash"></i>
-          </button>
-        `;
-        grid.appendChild(card);
-      });
-    }
-
-    async function deleteFace(name) {
-      if (!confirm(`Delete biometric face profile for '${name}'?`)) return;
-      const res = await fetch(`/api/faces/${name}`, { method: 'DELETE' });
-      if (res.ok) {
-        showToast(`Deleted face profile: ${name}`, 'success');
-        refreshFaces();
-      } else {
-        showToast('Failed to delete face', 'error');
-      }
-    }
-
-    async function enrollFromLiveFeed() {
-      const name = document.getElementById('quick-enroll-name').value.trim();
-      if (!name) return showToast('Please enter a name first', 'error');
-      showToast(`Enrolling '${name}' from live feed...`, 'info');
-      const fd = new FormData();
-      fd.append('name', name);
-      try {
-        const res = await fetch('/api/faces/enroll_live', { method: 'POST', body: fd });
-        const data = await res.json();
-        if (res.ok) {
-          showToast(data.message, 'success');
-          document.getElementById('quick-enroll-name').value = '';
-          refreshFaces();
-        } else {
-          showToast(data.detail || 'Enrollment failed. Ensure face is clearly visible.', 'error');
-        }
-      } catch (e) {
-        showToast('Enrollment error: ' + e, 'error');
-      }
-    }
-
-    let selectedAlerts = new Set();
-
-    async function refreshAlerts() {
-      try {
-        const res = await fetch('/api/alerts');
-        const alerts = await res.json();
-        const grid = document.getElementById('alerts-grid');
-        const countBadge = document.getElementById('alerts-total-count');
-        grid.innerHTML = '';
-        selectedAlerts.clear();
-        updateDeleteButtonState();
-        document.getElementById('select-all-alerts').checked = false;
-
-        countBadge.innerText = `${alerts.length} snapshot${alerts.length === 1 ? '' : 's'}`;
-
-        if (alerts.length === 0) {
-          grid.innerHTML = '<p class="text-xs text-slate-500 col-span-full py-8 text-center">No alert snapshots recorded yet.</p>';
-          return;
-        }
-
-        alerts.forEach(a => {
-          const item = document.createElement('div');
-          item.id = `alert-card-${a.filename.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
-          item.className = 'glass-card rounded-xl overflow-hidden hover:border-cyan-500/40 transition-all relative group flex flex-col justify-between';
-          
-          // Format timestamp into human readable date
-          let timeLabel = a.filename;
-          try {
-            const date = new Date(a.timestamp * 1000);
-            timeLabel = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-          } catch(e) {}
-
-          item.innerHTML = `
-            <div class="relative">
-              <!-- Selection Checkbox -->
-              <div class="absolute top-2 left-2 z-10 bg-slate-900/80 rounded-lg p-1 backdrop-blur-sm border border-white/10">
-                <input type="checkbox" value="${a.filename}" onchange="onAlertCheck('${a.filename}', this.checked)" class="alert-item-cb rounded text-cyan-600 focus:ring-0 cursor-pointer">
-              </div>
-
-              <!-- Quick Delete Icon -->
-              <button onclick="deleteSingleAlert('${a.filename}')" title="Delete snapshot" class="absolute top-2 right-2 z-10 bg-slate-900/80 hover:bg-rose-600 text-slate-400 hover:text-white rounded-lg w-7 h-7 flex items-center justify-center backdrop-blur-sm border border-white/10 transition-all opacity-0 group-hover:opacity-100">
-                <i class="fa-solid fa-trash-can text-xs"></i>
-              </button>
-
-              <a href="/api/alerts/${a.filename}" target="_blank">
-                <img src="/api/alerts/${a.filename}" class="w-full h-28 object-cover bg-slate-900" loading="lazy">
-              </a>
-            </div>
-
-            <div class="p-2 flex items-center justify-between text-[10px] text-slate-400 bg-slate-950/40">
-              <span class="truncate font-mono">${timeLabel}</span>
-              <button onclick="deleteSingleAlert('${a.filename}')" class="text-slate-500 hover:text-rose-400 ml-1">
-                <i class="fa-solid fa-trash"></i>
-              </button>
-            </div>
-          `;
-          grid.appendChild(item);
-        });
-      } catch (e) {
-        showToast('Error loading alerts: ' + e, 'error');
-      }
-    }
-
-    function onAlertCheck(filename, isChecked) {
-      if (isChecked) {
-        selectedAlerts.add(filename);
-      } else {
-        selectedAlerts.delete(filename);
-      }
-      updateDeleteButtonState();
-    }
-
-    function toggleSelectAllAlerts(checked) {
-      const cbs = document.querySelectorAll('.alert-item-cb');
-      selectedAlerts.clear();
-      cbs.forEach(cb => {
-        cb.checked = checked;
-        if (checked) {
-          selectedAlerts.add(cb.value);
-        }
-      });
-      updateDeleteButtonState();
-    }
-
-    function updateDeleteButtonState() {
-      const btn = document.getElementById('btn-delete-selected');
-      const label = document.getElementById('label-delete-selected');
-      const count = selectedAlerts.size;
-      
-      if (count > 0) {
-        btn.disabled = false;
-        btn.className = 'px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white cursor-pointer text-xs font-semibold shadow-lg transition-all flex items-center space-x-2 border border-rose-400/30';
-        label.innerText = `Delete Selected (${count})`;
-      } else {
-        btn.disabled = true;
-        btn.className = 'px-3.5 py-1.5 rounded-xl bg-slate-800 text-slate-500 cursor-not-allowed text-xs font-medium transition-all flex items-center space-x-2 border border-slate-700';
-        label.innerText = 'Delete Selected';
-      }
-    }
-
-    async function deleteSingleAlert(filename) {
-      if (!confirm(`Delete snapshot '${filename}'?`)) return;
-      try {
-        const res = await fetch(`/api/alerts/${encodeURIComponent(filename)}`, { method: 'DELETE' });
-        const data = await res.json();
-        if (res.ok) {
-          showToast(data.message || 'Snapshot deleted', 'success');
-          selectedAlerts.delete(filename);
-          refreshAlerts();
-        } else {
-          showToast(data.detail || 'Failed to delete snapshot', 'error');
-        }
-      } catch (e) {
-        showToast('Delete error: ' + e, 'error');
-      }
-    }
-
-    async function deleteSelectedAlerts() {
-      const count = selectedAlerts.size;
-      if (count === 0) return;
-      if (!confirm(`Are you sure you want to delete ${count} selected snapshot(s)?`)) return;
-
-      showToast(`Deleting ${count} snapshots...`, 'info');
-      try {
-        const res = await fetch('/api/alerts/delete_batch', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ filenames: Array.from(selectedAlerts) })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          showToast(data.message || `Deleted ${data.deleted_count} snapshots`, 'success');
-          selectedAlerts.clear();
-          refreshAlerts();
-        } else {
-          showToast(data.detail || 'Failed to delete selected snapshots', 'error');
-        }
-      } catch (e) {
-        showToast('Batch delete error: ' + e, 'error');
-      }
-    }
-
-    async function clearAllAlerts() {
-      if (!confirm('Warning: Are you sure you want to permanently delete ALL alert snapshots? This cannot be undone.')) return;
-      showToast('Clearing all snapshots...', 'info');
-      try {
-        const res = await fetch('/api/alerts/clear_all', { method: 'POST' });
-        const data = await res.json();
-        if (res.ok) {
-          showToast(data.message || 'All snapshots cleared', 'success');
-          selectedAlerts.clear();
-          refreshAlerts();
-        } else {
-          showToast(data.detail || 'Failed to clear snapshots', 'error');
-        }
-      } catch (e) {
-        showToast('Clear all error: ' + e, 'error');
       }
     }
   </script>
