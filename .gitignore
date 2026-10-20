@@ -22,10 +22,16 @@ checkpoints/*.zip
 # Temporary test images and experimental weights
 *.jpg
 *.png
+!web_dashboard/static/logo.png
+!logo.png
 *.pt
 rtdetr*.pt
 weights/
 *.onnx
+
+# PyInstaller build artifacts
+build/
+*.spec
 
 # OS artifacts
 Thumbs.db

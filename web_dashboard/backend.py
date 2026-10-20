@@ -60,6 +60,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 yolo_weights = os.path.join(ROOT_DIR, "desktop_client", "yolo11s.pt")
 if not os.path.exists(yolo_weights):
