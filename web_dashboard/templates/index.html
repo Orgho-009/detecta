@@ -948,44 +948,48 @@
     }
 
     async function refreshFaces() {
-      const res = await fetch('/api/faces');
-      const faces = await res.json();
-      const grid = document.getElementById('faces-grid');
-      grid.innerHTML = '';
-      if (faces.length === 0) {
-        grid.innerHTML = '<p class="text-xs text-slate-500 col-span-full py-8 text-center">No faces enrolled yet. Click "+ Add New Person" to upload photos.</p>';
-        return;
+      try {
+        const res = await fetch('/api/faces');
+        const faces = await res.json();
+        const grid = document.getElementById('faces-grid');
+        grid.innerHTML = '';
+        if (!faces || faces.length === 0) {
+          grid.innerHTML = '<p class="text-xs text-slate-500 col-span-full py-8 text-center">No faces enrolled yet. Click "+ Add New Person" to upload photos.</p>';
+          return;
+        }
+        faces.forEach(f => {
+          const card = document.createElement('div');
+          card.className = 'glass-card rounded-xl p-4 flex flex-col justify-between border border-white/5 hover:border-cyan-500/30 transition-all space-y-3';
+          card.innerHTML = `
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-base uppercase shadow-inner">
+                ${f.name.charAt(0)}
+              </div>
+              <div>
+                <span class="text-sm font-bold text-white block">${f.name}</span>
+                <span class="text-[10px] text-[#28a745] font-semibold block">ArcFace 512-D Verified</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between pt-2 border-t border-white/5 text-xs">
+              <button onclick="triggerUploadPhoto('${f.name}')" title="Upload additional clear photo" class="px-2.5 py-1 rounded-lg bg-cyan-600/20 hover:bg-cyan-600 text-cyan-300 hover:text-white transition-all flex items-center space-x-1 border border-cyan-500/20">
+                <i class="fa-solid fa-cloud-arrow-up text-[11px]"></i>
+                <span>Upload Photo</span>
+              </button>
+              <div class="flex items-center space-x-1">
+                <button onclick="renameFacePrompt('${f.name}')" title="Rename" class="text-slate-400 hover:text-amber-400 p-1.5 rounded-lg hover:bg-amber-500/10 transition-all">
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+                <button onclick="deleteFace('${f.name}')" title="Delete" class="text-slate-400 hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-500/10 transition-all">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          `;
+          grid.appendChild(card);
+        });
+      } catch (err) {
+        console.warn('Could not refresh faces:', err);
       }
-      faces.forEach(f => {
-        const card = document.createElement('div');
-        card.className = 'glass-card rounded-xl p-4 flex flex-col justify-between border border-white/5 hover:border-cyan-500/30 transition-all space-y-3';
-        card.innerHTML = `
-          <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-base uppercase shadow-inner">
-              ${f.name.charAt(0)}
-            </div>
-            <div>
-              <span class="text-sm font-bold text-white block">${f.name}</span>
-              <span class="text-[10px] text-[#28a745] font-semibold block">ArcFace 512-D Verified</span>
-            </div>
-          </div>
-          <div class="flex items-center justify-between pt-2 border-t border-white/5 text-xs">
-            <button onclick="triggerUploadPhoto('${f.name}')" title="Upload additional clear photo" class="px-2.5 py-1 rounded-lg bg-cyan-600/20 hover:bg-cyan-600 text-cyan-300 hover:text-white transition-all flex items-center space-x-1 border border-cyan-500/20">
-              <i class="fa-solid fa-cloud-arrow-up text-[11px]"></i>
-              <span>Upload Photo</span>
-            </button>
-            <div class="flex items-center space-x-1">
-              <button onclick="renameFacePrompt('${f.name}')" title="Rename" class="text-slate-400 hover:text-amber-400 p-1.5 rounded-lg hover:bg-amber-500/10 transition-all">
-                <i class="fa-solid fa-pen"></i>
-              </button>
-              <button onclick="deleteFace('${f.name}')" title="Delete" class="text-slate-400 hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-500/10 transition-all">
-                <i class="fa-solid fa-trash"></i>
-              </button>
-            </div>
-          </div>
-        `;
-        grid.appendChild(card);
-      });
     }
 
     async function renameFacePrompt(oldName) {
@@ -1012,12 +1016,16 @@
 
     async function deleteFace(name) {
       if (!confirm(`Delete biometric face profile for '${name}'?`)) return;
-      const res = await fetch(`/api/faces/${name}`, { method: 'DELETE' });
-      if (res.ok) {
-        showToast(`Deleted face profile: ${name}`, 'success');
-        refreshFaces();
-      } else {
-        showToast('Failed to delete face', 'error');
+      try {
+        const res = await fetch(`/api/faces/${name}`, { method: 'DELETE' });
+        if (res.ok) {
+          showToast(`Deleted face profile: ${name}`, 'success');
+          refreshFaces();
+        } else {
+          showToast('Failed to delete face', 'error');
+        }
+      } catch (err) {
+        showToast('Error deleting face: ' + err, 'error');
       }
     }
 
