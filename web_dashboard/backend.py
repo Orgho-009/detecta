@@ -98,7 +98,7 @@ def processing_worker():
     last_frame_id = -1
     while True:
         try:
-            if camera is None:
+            if camera is None or getattr(camera, "paused", False):
                 time.sleep(0.05)
                 continue
 
@@ -188,10 +188,17 @@ def get_status():
         "status": "connected" if connected else "offline",
         "fps": round(fps, 1),
         "ip": config.get("camera_ip", "192.168.0.52"),
+        "wifi_ssid": config.get("camera_wifi_ssid", "ORGHO"),
         "inventory": latest_inventory if connected else {},
         "uptime": int(time.time() - server_start_time),
         "total_faces": len(ai_engine.known_faces)
     }
+
+@app.post("/api/camera/restart")
+def restart_camera():
+    cam_ip = config.get("camera_ip", "192.168.0.52")
+    init_camera(cam_ip)
+    return {"status": "ok", "message": f"Camera stream restarted from {cam_ip}"}
 
 @app.post("/api/camera/ip")
 def set_camera_ip(ip: str = Form(...)):
@@ -408,10 +415,6 @@ def scan_surrounding_wifi():
                         curr_ssid = None
         except Exception:
             pass
-
-    # Resume camera stream if it was actively streaming before scan
-    if camera and not was_paused:
-        camera.resume()
 
     return networks
 

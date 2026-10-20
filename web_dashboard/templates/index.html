@@ -96,11 +96,14 @@
         <span id="fps-badge" class="font-bold text-emerald-400">0.0</span>
       </div>
 
-      <!-- Wi-Fi Host / Camera IP & Restart Button -->
-      <div class="flex items-center bg-slate-900/90 rounded-full p-1 border border-slate-800 shadow-sm pl-3">
-        <span class="text-[10px] text-slate-400 font-semibold uppercase mr-1.5 tracking-wider">Wi-Fi Host</span>
-        <input type="text" id="quick-ip" placeholder="192.168.0.52" class="bg-transparent text-xs text-slate-200 focus:outline-none w-28 font-mono" onkeydown="if(event.key==='Enter') restartStream()">
-        <button id="btn-restart" onclick="restartStream()" class="px-3.5 py-1 rounded-full bg-cyan-600 hover:bg-cyan-500 text-[11px] font-bold text-white transition-all shadow-md flex items-center space-x-1.5">
+      <!-- Wi-Fi Network Name Badge & Restart Button (No IP Address) -->
+      <div class="flex items-center bg-slate-900/90 rounded-full py-1 px-3 border border-slate-800 shadow-sm space-x-2.5">
+        <div class="flex items-center space-x-1.5">
+          <i class="fa-solid fa-wifi text-[11px] text-cyan-400"></i>
+          <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Wi-Fi:</span>
+          <span id="top-wifi-ssid" class="text-xs font-bold text-cyan-400 font-mono tracking-wide">ORGHO</span>
+        </div>
+        <button id="btn-restart" onclick="restartStream()" title="Restart Live Stream" class="px-3 py-1 rounded-full bg-cyan-600 hover:bg-cyan-500 text-[11px] font-bold text-white transition-all shadow-md flex items-center space-x-1.5">
           <i class="fa-solid fa-arrows-rotate text-[10px]"></i>
           <span>Restart</span>
         </button>
@@ -421,8 +424,23 @@
       }
     }
 
+    let currentActiveTab = 'monitor';
+    let isStreamPaused = false;
+    let wifiScanAbortController = null;
+
     // Tab Switching (4 Tabs: Live Stream, Face Database, Wi-Fi, Settings)
     function switchTab(tab) {
+      if (currentActiveTab === tab) return;
+
+      // Immediately abort any in-flight Wi-Fi scan when leaving Wi-Fi tab
+      if (wifiScanAbortController) {
+        wifiScanAbortController.abort();
+        wifiScanAbortController = null;
+      }
+
+      currentActiveTab = tab;
+
+      // Update Tab Navigation Buttons
       ['monitor', 'faces', 'wifi', 'settings'].forEach(t => {
         const el = document.getElementById(`view-${t}`);
         if (el) el.classList.add('hidden');
@@ -440,52 +458,60 @@
         activeBtn.classList.remove('text-slate-400');
       }
 
-      if (tab === 'wifi') {
-        // Stream-Pause State Machine: pause video stream to release Port 81 for Wi-Fi config
+      // Exclusive Tab Execution:
+      // Only Live Stream runs video & AI; all other tabs strictly pause video and AI
+      if (tab === 'monitor') {
+        // Exclusively Resume Live Video Stream & AI Processing
+        fetch('/api/stream/resume', { method: 'POST' }).catch(() => {});
+        isStreamPaused = false;
+        const img = document.getElementById('live-stream-img');
+        if (img) img.src = '/api/stream?t=' + Date.now();
+        pollStatus();
+      } else {
+        // Strictly stop live stream image & AI worker
         isStreamPaused = true;
         const img = document.getElementById('live-stream-img');
         if (img) img.src = '';
+        fetch('/api/stream/pause', { method: 'POST' }).catch(() => {});
 
-        // Clearly indicate Stream Paused for Wi-Fi Configuration in top navigation
+        // Top Navigation Status
         const dot = document.getElementById('cam-status-dot');
         const txt = document.getElementById('cam-status-text');
         const pill = document.getElementById('cam-status-pill');
-        if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-cyan-400';
-        if (txt) {
-          txt.innerText = 'Stream Paused (Wi-Fi Config)';
-          txt.className = 'font-bold text-cyan-400';
-        }
-        if (pill) pill.style.borderColor = 'rgba(6, 182, 212, 0.4)';
         const fpsBadge = document.getElementById('fps-badge');
         if (fpsBadge) fpsBadge.innerText = '--';
+        if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-cyan-400';
+        if (pill) pill.style.borderColor = 'rgba(6, 182, 212, 0.4)';
 
-        // Pause backend camera stream so wireless adapter is completely free to scan radio channels
-        fetch('/api/stream/pause', { method: 'POST' }).catch(() => {});
-
-        loadCameraWifi();
-      } else {
-        if (isStreamPaused) {
-          // Resume video stream smoothly after 300ms delay
-          fetch('/api/stream/resume', { method: 'POST' }).catch(() => {});
-          setTimeout(() => {
-            isStreamPaused = false;
-            const img = document.getElementById('live-stream-img');
-            if (img) img.src = '/api/stream?t=' + Date.now();
-            pollStatus();
-          }, 300);
+        if (tab === 'wifi') {
+          if (txt) {
+            txt.innerText = 'Wi-Fi Manager (Stream Paused)';
+            txt.className = 'font-bold text-cyan-400';
+          }
+          loadCameraWifi();
+        } else if (tab === 'faces') {
+          if (txt) {
+            txt.innerText = 'Face Database (Stream Paused)';
+            txt.className = 'font-bold text-cyan-400';
+          }
+          refreshFaces();
+        } else if (tab === 'settings') {
+          if (txt) {
+            txt.innerText = 'Settings (Stream Paused)';
+            txt.className = 'font-bold text-cyan-400';
+          }
+          loadSettings();
         }
       }
-
-      if (tab === 'faces') refreshFaces();
-      if (tab === 'settings') loadSettings();
     }
 
     // Status Polling Loop
     async function pollStatus() {
-      if (isStreamPaused) return;
+      if (currentActiveTab !== 'monitor' || isStreamPaused) return;
       try {
         const res = await fetch('/api/status');
         const data = await res.json();
+        if (currentActiveTab !== 'monitor') return;
         
         document.getElementById('fps-badge').innerText = data.fps.toFixed(1);
         
@@ -545,20 +571,19 @@
 
         const humans = inv.Human || 0;
         const badge = document.getElementById('threat-badge');
-        if (humans > 0) {
-          badge.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20';
-          badge.innerText = `Threat Alert: ${humans} Human`;
-        } else {
-          badge.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
-          badge.innerText = 'Area Secure';
+        if (badge) {
+          if (humans > 0) {
+            badge.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20';
+            badge.innerText = `Threat Alert: ${humans} Human`;
+          } else {
+            badge.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+            badge.innerText = 'Area Secure';
+          }
         }
 
-        if (data.ip) {
-          document.getElementById('label-camera-ip').innerText = data.ip.includes(':') ? data.ip : `${data.ip}:81`;
-          if (!initialIpLoaded) {
-            document.getElementById('quick-ip').value = data.ip;
-            initialIpLoaded = true;
-          }
+        if (data.wifi_ssid) {
+          const topWifi = document.getElementById('top-wifi-ssid');
+          if (topWifi) topWifi.innerText = data.wifi_ssid;
         }
       } catch (e) {}
     }
@@ -569,32 +594,26 @@
     // Restart Stream Functionality
     async function restartStream() {
       const btn = document.getElementById('btn-restart');
-      let targetIp = document.getElementById('quick-ip').value.trim();
-      if (!targetIp) targetIp = document.getElementById('quick-ip').placeholder;
-
       updateStatusBadge('searching');
       btn.disabled = true;
-      showToast(`Restarting stream from ${targetIp}...`, 'info');
-
-      const fd = new FormData();
-      fd.append('ip', targetIp);
+      showToast('Restarting camera stream...', 'info');
 
       try {
-        const res = await fetch('/api/camera/ip', { method: 'POST', body: fd });
+        const res = await fetch('/api/camera/restart', { method: 'POST' });
         if (res.ok) {
-          showToast(`Stream restarted successfully!`, 'success');
-          document.getElementById('quick-ip').value = targetIp;
-          document.getElementById('label-camera-ip').innerText = `${targetIp}:81`;
+          showToast('Stream restarted successfully!', 'success');
           updateStatusBadge('connected');
           const img = document.getElementById('live-stream-img');
-          img.src = '/api/stream?t=' + Date.now();
+          if (img && currentActiveTab === 'monitor') {
+            img.src = '/api/stream?t=' + Date.now();
+          }
         } else {
           updateStatusBadge('offline');
-          showToast('Failed to connect to camera', 'error');
+          showToast('Failed to restart camera stream', 'error');
         }
       } catch (err) {
         updateStatusBadge('offline');
-        showToast('Stream error: ' + err, 'error');
+        showToast('Stream restart error: ' + err, 'error');
       } finally {
         btn.disabled = false;
       }
@@ -629,6 +648,8 @@
         const data = await res.json();
         
         document.getElementById('esp-active-ssid').innerText = data.ssid || 'ORGHO';
+        const topSsid = document.getElementById('top-wifi-ssid');
+        if (topSsid) topSsid.innerText = data.ssid || 'ORGHO';
         document.getElementById('esp-signal').innerText = data.rssi || '-62 dBm';
         document.getElementById('esp-ip-badge').innerText = `${data.ip}:81`;
 
@@ -664,8 +685,15 @@
       }
     }
 
-    // Real Wi-Fi Network Scan without Demo Data
+    // Real Wi-Fi Network Scan without Demo Data (With Strict Cancellation)
     async function scanWifiNetworks() {
+      if (currentActiveTab !== 'wifi') return;
+
+      if (wifiScanAbortController) {
+        wifiScanAbortController.abort();
+      }
+      wifiScanAbortController = new AbortController();
+
       const otherList = document.getElementById('other-networks-list');
       const scanIcon = document.getElementById('scan-icon');
       const scanLabel = document.getElementById('scan-label');
@@ -681,13 +709,19 @@
       `;
 
       try {
-        const res = await fetch('/api/camera/wifi/scan');
+        const res = await fetch('/api/camera/wifi/scan', { signal: wifiScanAbortController.signal });
         const data = await res.json();
-        const networks = data.networks || [];
-        renderRealScannedNetworks(networks);
+        if (currentActiveTab === 'wifi') {
+          const networks = data.networks || [];
+          renderRealScannedNetworks(networks);
+        }
       } catch (e) {
-        otherList.innerHTML = `<div class="p-4 rounded-xl bg-slate-900/40 border border-white/5 text-center text-xs text-rose-400">Scan failed: ${e}</div>`;
+        if (e.name === 'AbortError') return;
+        if (currentActiveTab === 'wifi') {
+          otherList.innerHTML = `<div class="p-4 rounded-xl bg-slate-900/40 border border-white/5 text-center text-xs text-rose-400">Scan failed: ${e}</div>`;
+        }
       } finally {
+        wifiScanAbortController = null;
         if (scanIcon) scanIcon.className = 'fa-solid fa-rotate text-[11px]';
         if (scanLabel) scanLabel.innerText = 'Scan';
       }
