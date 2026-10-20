@@ -62,7 +62,7 @@ class CameraStream:
                     last_calc = time.time()
                     count = 0
 
-                    for chunk in r.iter_content(chunk_size=32768):
+                    for chunk in r.iter_content(chunk_size=16384):
                         if self.stopped:
                             break
                         if not chunk:
@@ -81,7 +81,6 @@ class CameraStream:
                                     clen = int(buf[hdr + 15:end_hdr].strip())
                                     start = end_hdr + 4
                                     if len(buf) < start + clen:
-                                        # Wait for remaining frame packets to arrive
                                         break
                                     jpg = bytes(buf[start:start + clen])
                                     del buf[:start + clen]
@@ -98,7 +97,6 @@ class CameraStream:
                                 except Exception:
                                     del buf[:end_hdr + 4]
                             else:
-                                # Fallback: search for SOI and EOI with boundary \xff\xd9\r\n--
                                 a = buf.find(b'\xff\xd8')
                                 if a == -1:
                                     if len(buf) > 4:
@@ -106,7 +104,6 @@ class CameraStream:
                                     break
                                 b = buf.find(b'\xff\xd9\r\n--', a + 2)
                                 if b == -1:
-                                    # Secondary fallback for VGA (size >= 6000)
                                     b_alt = buf.find(b'\xff\xd9', a + 6000)
                                     if b_alt != -1:
                                         b = b_alt

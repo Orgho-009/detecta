@@ -16,6 +16,17 @@ __pycache__/
 # Alert backups
 backups/*.jpg
 
+# Checkpoint zip archives
+checkpoints/*.zip
+
+# Temporary test images and experimental weights
+*.jpg
+*.png
+*.pt
+rtdetr*.pt
+weights/
+*.onnx
+
 # OS artifacts
 Thumbs.db
 ehthumbs.db

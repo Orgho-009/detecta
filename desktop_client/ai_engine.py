@@ -25,12 +25,10 @@ try:
 except Exception:
     HAS_MEDIAPIPE = False
 
-INDOOR_TARGET_CLASSES = {
+TARGET_CLASSES = {
     0: "Human",
-    24: "Backpack / Bag",
-    26: "Handbag",
     39: "Bottle / Spray",
-    41: "Cup / Mug",
+    41: "Cup",
     46: "Banana",
     47: "Apple",
     49: "Orange / Fruit",
@@ -38,7 +36,7 @@ INDOOR_TARGET_CLASSES = {
     62: "TV/Monitor",
     63: "Laptop",
     64: "Mouse",
-    65: "Remote",
+    65: "Mouse",          # Remote remapped to Mouse in desk context
     66: "Keyboard",
     67: "Cell Phone",
     73: "Book",
@@ -46,7 +44,7 @@ INDOOR_TARGET_CLASSES = {
     75: "Vase / Flowers",
     77: "Doll / Teddy Bear"
 }
-ALLOWED_CLASS_IDS = list(INDOOR_TARGET_CLASSES.keys())
+ALLOWED_CLASS_IDS = list(TARGET_CLASSES.keys())
 
 GESTURE_EMOJIS = {
     "Thumb_Up": "👍 Thumbs Up",
@@ -184,17 +182,17 @@ class AIEngine:
         h, w = frame.shape[:2]
         annotated = frame.copy()
 
-        # 1. Run YOLO inference strictly on indoor/everyday curated classes (conf=0.28)
+        # 1. Run YOLO inference on curated target classes
         results = self.model(
             frame,
             classes=ALLOWED_CLASS_IDS,
-            conf=0.28,
+            conf=0.18,
             device=self.device,
             verbose=False
         )
 
         raw_human_boxes = []
-        candidates = []
+        candidate_detections = []
 
         if len(results) > 0 and len(results[0].boxes) > 0:
             for b in results[0].boxes:
@@ -208,43 +206,61 @@ class AIEngine:
                 if cls_id == 0:
                     if score >= 0.35:
                         raw_human_boxes.append((x1, y1, x2, y2, score))
-                    continue
+                else:
+                    cls_name = TARGET_CLASSES.get(cls_id, self.model.names.get(cls_id, f"obj_{cls_id}"))
 
-                cls_name = INDOOR_TARGET_CLASSES.get(cls_id, f"obj_{cls_id}")
+                    # Peripheral Disambiguation:
+                    # A compact dark device held in palm/hand or on desk is a Mouse
+                    if cls_name == "Cell Phone":
+                        if aspect < 1.55 and max(bw, bh) < 190:
+                            cls_name = "Mouse"
+                    elif cls_name in ["Keyboard", "Remote"]:
+                        if max(bw, bh) < 190:
+                            cls_name = "Mouse"
 
-                # Universal Sanity Filters:
-                # 1. Reject optical slivers / curtain pleats (minimum box dimension >= 25px)
-                if min(bw, bh) < 25:
-                    continue
-                # 2. Reject full camera frame background boxes (e.g. whole screen TV hallucination)
-                if (bw * bh) > 0.75 * (w * h):
-                    continue
-                # 3. Book / Paper (reject high-aspect curtain folds)
-                if cls_name == "Book" and (aspect > 2.5 or min(bw, bh) < 40):
-                    continue
-                # 4. TV/Monitor (reject desktop/wall false positives)
-                if cls_name == "TV/Monitor" and (score < 0.50 or bw < 120 or bh < 90):
-                    continue
+                    # Per-object confidence and geometry sanity filters:
+                    keep = False
+                    if cls_name == "Mouse":
+                        keep = (score >= 0.22)
+                    elif cls_name == "Watch / Clock":
+                        keep = (score >= 0.28 and min(bw, bh) >= 25)
+                    elif cls_name in ["Flowers / Plant", "Vase / Flowers"]:
+                        keep = (score >= 0.28 and min(bw, bh) >= 40)
+                    elif cls_name in ["Banana", "Apple", "Orange / Fruit"]:
+                        keep = (score >= 0.30 and min(bw, bh) >= 30)
+                    elif cls_name == "Bottle / Spray":
+                        keep = (score >= 0.28 and min(bw, bh) >= 30)
+                    elif cls_name == "Cup":
+                        keep = (score >= 0.30 and min(bw, bh) >= 30)
+                    elif cls_name == "Book":
+                        # Reject curtain folds (folds have high aspect ratio > 2.5 or narrow width < 45px)
+                        keep = (score >= 0.40 and min(bw, bh) >= 45 and aspect < 2.5)
+                    elif cls_name == "Doll / Teddy Bear":
+                        keep = (score >= 0.28)
+                    elif cls_name == "Laptop":
+                        keep = (score >= 0.35 and bw >= 80 and bh >= 60 and (bw * bh) < 0.65 * (w * h))
+                    elif cls_name == "TV/Monitor":
+                        # Reject full frame / window border false positives
+                        keep = (score >= 0.55 and (bw * bh) < 0.65 * (w * h))
+                    elif cls_name == "Cell Phone":
+                        keep = (score >= 0.35 and min(bw, bh) >= 35)
+                    else:
+                        keep = (score >= 0.35)
 
-                candidates.append((score, cls_name, [x1, y1, x2, y2], aspect, bw, bh))
+                    if keep:
+                        candidate_detections.append((cls_name, [x1, y1, x2, y2], score))
 
         # Cross-class NMS: sort by confidence descending so higher-scoring class wins overlapping regions
-        candidates.sort(key=lambda x: x[0], reverse=True)
+        candidate_detections.sort(key=lambda x: x[2], reverse=True)
         new_detections = []
-        for score, name, box, aspect, bw, bh in candidates:
+        for (c_name, c_box, c_score) in candidate_detections:
             overlap = False
-            for _, fbox, _ in new_detections:
-                if calc_iou(box, fbox) > 0.40:
+            for (_, f_box, _) in new_detections:
+                if calc_iou(c_box, f_box) > 0.40:
                     overlap = True
                     break
             if not overlap:
-                # Disambiguate handheld objects AFTER cross-class NMS:
-                # A compact dark peripheral held or on desk is a Mouse
-                if name == "Cell Phone" and aspect < 1.55 and max(bw, bh) < 190:
-                    name = "Mouse"
-                elif name == "Remote" and max(bw, bh) < 190:
-                    name = "Mouse"
-                new_detections.append((name, box, score))
+                new_detections.append((c_name, c_box, c_score))
 
         # 2. Biometric Face Recognition (Staggered on frame_count % 4 == 2 to avoid coinciding with gestures)
         should_check_face = (
@@ -320,20 +336,19 @@ class AIEngine:
         for cls_name, box, score in new_detections:
             matched = False
             for t in self.tracked_objects:
-                if calc_iou(t.box, box) > 0.35:
-                    t.cls_name = cls_name
-                    ttl_val = 8 if cls_name == "Doll / Teddy Bear" else 5
+                if t.cls_name == cls_name and calc_iou(t.box, box) > 0.25:
+                    ttl_val = 8 if cls_name == "Doll / Teddy Bear" else 6
                     t.update(box, score, ttl=ttl_val)
                     matched = True
                     break
             if not matched:
-                ttl_val = 8 if cls_name == "Doll / Teddy Bear" else 5
+                ttl_val = 8 if cls_name == "Doll / Teddy Bear" else 6
                 self.tracked_objects.append(TrackedBox(cls_name, box, score, ttl=ttl_val))
 
         # Decay and remove expired tracks
         active_objects = []
         for t in self.tracked_objects:
-            was_updated = any(calc_iou(t.box, b) > 0.35 for _, b, _ in new_detections)
+            was_updated = any(t.cls_name == c and calc_iou(t.box, b) > 0.25 for c, b, _ in new_detections)
             if not was_updated:
                 t.ttl -= 1
             if t.ttl > 0:
