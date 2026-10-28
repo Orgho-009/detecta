@@ -27,6 +27,9 @@ except Exception:
 
 TARGET_CLASSES = {
     0: "Human",
+    24: "Box / Bag",
+    26: "Box / Bag",        # Handbag in COCO
+    28: "Box",              # Suitcase / Cardboard box / Container / Carton
     39: "Bottle / Spray",
     41: "Cup",
     46: "Banana",
@@ -36,13 +39,14 @@ TARGET_CLASSES = {
     62: "TV/Monitor",
     63: "Laptop",
     64: "Mouse",
-    65: "Mouse",          # Remote remapped to Mouse in desk context
+    65: "Mouse",            # Remote remapped to Mouse in desk context
     66: "Keyboard",
     67: "Cell Phone",
     73: "Book",
     74: "Watch / Clock",
     75: "Vase / Flowers",
-    77: "Doll / Teddy Bear"
+    77: "Doll / Teddy Bear",
+    79: "Pen"               # Toothbrush remapped to Pen with strict geometric & hand protrusion filters
 }
 ALLOWED_CLASS_IDS = list(TARGET_CLASSES.keys())
 
@@ -209,19 +213,34 @@ class AIEngine:
                 else:
                     cls_name = TARGET_CLASSES.get(cls_id, self.model.names.get(cls_id, f"obj_{cls_id}"))
 
-                    # Peripheral Disambiguation:
-                    # A compact dark device held in palm/hand or on desk is a Mouse
+                    # Peripheral & Stationery Disambiguation:
                     if cls_name == "Cell Phone":
                         if aspect < 1.55 and max(bw, bh) < 190:
                             cls_name = "Mouse"
                     elif cls_name in ["Keyboard", "Remote"]:
                         if max(bw, bh) < 190:
                             cls_name = "Mouse"
+                    elif cls_id == 28: # Suitcase in COCO -> Box / Carton
+                        cls_name = "Box"
+                    elif cls_id in [24, 26]: # Backpack or Handbag in COCO
+                        if aspect < 2.0 and min(bw, bh) >= 30:
+                            cls_name = "Box"
+                        else:
+                            cls_name = "Box / Bag"
+                    elif cls_id == 79: # Toothbrush in COCO -> Pen
+                        cls_name = "Pen"
 
                     # Per-object confidence and geometry sanity filters:
                     keep = False
                     if cls_name == "Mouse":
                         keep = (score >= 0.22)
+                    elif cls_name == "Box":
+                        keep = (score >= 0.18 and min(bw, bh) >= 28 and (bw * bh) < 0.85 * (w * h))
+                    elif cls_name == "Box / Bag":
+                        keep = (score >= 0.22 and min(bw, bh) >= 35 and (bw * bh) < 0.85 * (w * h))
+                    elif cls_name == "Pen":
+                        # Slender cylinder geometry test (real writing pen or stylus)
+                        keep = (score >= 0.30 and aspect >= 2.4 and max(bw, bh) >= 28 and min(bw, bh) <= 35)
                     elif cls_name == "Watch / Clock":
                         keep = (score >= 0.28 and min(bw, bh) >= 25)
                     elif cls_name in ["Flowers / Plant", "Vase / Flowers"]:
@@ -234,7 +253,7 @@ class AIEngine:
                         keep = (score >= 0.30 and min(bw, bh) >= 30)
                     elif cls_name == "Book":
                         # Reject curtain folds (folds have high aspect ratio > 2.5 or narrow width < 45px)
-                        keep = (score >= 0.40 and min(bw, bh) >= 45 and aspect < 2.5)
+                        keep = (score >= 0.38 and min(bw, bh) >= 40 and aspect < 2.5)
                     elif cls_name == "Doll / Teddy Bear":
                         keep = (score >= 0.28)
                     elif cls_name == "Laptop":
@@ -243,9 +262,9 @@ class AIEngine:
                         # Reject full frame / window border false positives
                         keep = (score >= 0.55 and (bw * bh) < 0.65 * (w * h))
                     elif cls_name == "Cell Phone":
-                        keep = (score >= 0.35 and min(bw, bh) >= 35)
+                        keep = (score >= 0.32 and min(bw, bh) >= 30)
                     else:
-                        keep = (score >= 0.35)
+                        keep = (score >= 0.30)
 
                     if keep:
                         candidate_detections.append((cls_name, [x1, y1, x2, y2], score))
@@ -262,15 +281,17 @@ class AIEngine:
             if not overlap:
                 new_detections.append((c_name, c_box, c_score))
 
-        # 2. Biometric Face Recognition (Staggered on frame_count % 4 == 2 to avoid coinciding with gestures)
+        # 2. Biometric Face Recognition with Verified Caching
+        has_verified_face = any("[Verified]" in label for (_, _, _, _, label) in self.cached_faces)
+        face_stride = 24 if has_verified_face else 6
         should_check_face = (
             len(raw_human_boxes) > 0 or 
             len(self.cached_faces) > 0 or 
-            (self.frame_count % 8 == 2)
+            (self.frame_count % 24 == 2)
         )
 
         if should_check_face and len(self.known_faces) > 0:
-            if self.frame_count % 4 == 2 or len(self.cached_faces) == 0:
+            if self.frame_count % face_stride == 2:
                 small = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
                 detected_faces = self.face_app.get(small)
 
@@ -294,15 +315,17 @@ class AIEngine:
 
                     self.cached_faces.append((fx1, fy1, fx2, fy2, label))
         elif len(raw_human_boxes) == 0 and len(self.cached_faces) > 0:
-            if self.frame_count % 4 == 2:
+            if self.frame_count % 6 == 2:
                 self.cached_faces = []
 
-        # 3. MediaPipe Hand Sign & Gesture Recognition (Staggered on frame_count % 4 == 0 on downsampled frame)
+        # 3. MediaPipe Hand Sign & Gesture Recognition (Downscaled to 256x192, Stride 6)
         current_gestures = []
         if self.gesture_recognizer is not None:
-            if self.frame_count % 4 == 0 or len(self.cached_gestures) == 0:
+            # Only run if a human is present or gesture was active
+            should_check_gesture = (len(raw_human_boxes) > 0 or len(self.cached_faces) > 0 or len(self.cached_gestures) > 0)
+            if should_check_gesture and (self.frame_count % 6 == 0):
                 try:
-                    small_rgb = cv2.resize(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB), (320, 240))
+                    small_rgb = cv2.resize(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB), (256, 192))
                     mp_img = mp.Image(image_format=mp.ImageFormat.SRGB, data=small_rgb)
                     gesture_result = self.gesture_recognizer.recognize(mp_img)
 
@@ -325,24 +348,55 @@ class AIEngine:
                             current_gestures.append((gx1, gy1, gx2, gy2, g_name, g_score))
                         self.cached_gestures = current_gestures
                     else:
-                        if self.frame_count % 4 == 0:
-                            self.cached_gestures = []
+                        self.cached_gestures = []
                 except Exception:
                     pass
             current_gestures = self.cached_gestures
+
+        # Hand / Finger Spatial Suppression vs Held Pen Detection:
+        clean_detections = []
+        for (c_name, c_box, c_score) in new_detections:
+            if c_name == "Pen":
+                px1, py1, px2, py2 = c_box
+                pbw, pbh = px2 - px1, py2 - py1
+                pen_area = max(1, pbw * pbh)
+                is_finger_hallucination = False
+
+                for (gx1, gy1, gx2, gy2, g_name, _) in current_gestures:
+                    inter_w = max(0, min(px2, gx2) - max(px1, gx1))
+                    inter_h = max(0, min(py2, gy2) - max(py1, gy1))
+                    inter_area = inter_w * inter_h
+                    containment = inter_area / pen_area
+
+                    # Explicit hand gestures (pointing, victory, open palm) mean bare fingers
+                    if g_name in ["☝️ Pointing", "✌️ Victory", "✋ Open Palm"] and containment > 0.50:
+                        is_finger_hallucination = True
+                        break
+
+                    # If >85% of candidate box is buried inside hand without protruding outside
+                    if containment > 0.85:
+                        protrusion = max(0, gx1 - px1) + max(0, px2 - gx2) + max(0, gy1 - py1) + max(0, py2 - gy2)
+                        if protrusion < 25:
+                            is_finger_hallucination = True
+                            break
+
+                if is_finger_hallucination:
+                    continue
+            clean_detections.append((c_name, c_box, c_score))
+        new_detections = clean_detections
 
         # 4. Temporal Persistence Tracker Update (Zero Flickering)
         # Match new detections with existing tracked objects
         for cls_name, box, score in new_detections:
             matched = False
             for t in self.tracked_objects:
-                if t.cls_name == cls_name and calc_iou(t.box, box) > 0.25:
-                    ttl_val = 8 if cls_name == "Doll / Teddy Bear" else 6
+                if t.cls_name == cls_name and calc_iou(t.box, box) > 0.22:
+                    ttl_val = 8 if cls_name in ["Doll / Teddy Bear", "Box", "Pen"] else 6
                     t.update(box, score, ttl=ttl_val)
                     matched = True
                     break
             if not matched:
-                ttl_val = 8 if cls_name == "Doll / Teddy Bear" else 6
+                ttl_val = 8 if cls_name in ["Doll / Teddy Bear", "Box", "Pen"] else 6
                 self.tracked_objects.append(TrackedBox(cls_name, box, score, ttl=ttl_val))
 
         # Decay and remove expired tracks

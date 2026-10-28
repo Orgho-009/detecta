@@ -1,6 +1,6 @@
 """
 High-Performance Camera Stream Reader
-Directly optimized for ESP32-CAM and Windows 11.
+Directly inherited from the proven Checkpoint v2.0 baseline.
 Bypasses OpenCV's blocking FFmpeg MJPEG socket bugs by using native HTTP chunked streaming (via requests),
 while maintaining full cv2.VideoCapture fallback for local USB webcams.
 """
@@ -81,7 +81,7 @@ class CameraStream:
                         buf.extend(chunk)
 
                         while True:
-                            # 1. Content-Length parser (standard for ESP32-CAM MJPEG)
+                            # 1. High-precision Content-Length parser (standard for ESP32-CAM MJPEG)
                             hdr = buf.find(b'Content-Length:')
                             if hdr != -1:
                                 end_hdr = buf.find(b'\r\n\r\n', hdr)
@@ -107,6 +107,7 @@ class CameraStream:
                                 except Exception:
                                     del buf[:end_hdr + 4]
                             else:
+                                # 2. Boundary-safe delimiter fallback
                                 a = buf.find(b'\xff\xd8')
                                 if a == -1:
                                     if len(buf) > 4:
@@ -138,7 +139,7 @@ class CameraStream:
                             now = time.time()
                             if now - last_calc >= 0.8:
                                 calc_fps = count / (now - last_calc)
-                                self.fps = round(calc_fps if self.fps == 0.0 else (0.6 * self.fps + 0.4 * calc_fps), 1)
+                                self.fps = round(calc_fps if self.fps == 0.0 else (0.7 * self.fps + 0.3 * calc_fps), 1)
                                 count = 0
                                 last_calc = now
 
@@ -194,7 +195,7 @@ class CameraStream:
 
     def read(self):
         with self.lock:
-            return self.frame.copy() if self.frame is not None else None
+            return self.frame
 
     def stop(self):
         self.stopped = True

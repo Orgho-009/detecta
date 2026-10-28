@@ -1,41 +1,74 @@
-# Python virtual environment
+# ==============================================================================
+# Detecta — Git Ignore Configuration
+# ==============================================================================
+
+# --- Python Virtual Environments ---
 .venv/
 venv/
 ENV/
 env/
+*.env
 
-# PlatformIO build artifacts
-.pio/
-firmware/pio_project/.pio/
-
-# Python cache
+# --- Python Bytecode & Cache ---
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyd
+*.so
+.pytest_cache/
 
-# Alert backups
+# --- PlatformIO & Embedded Firmware Build Artifacts ---
+.pio/
+firmware/**/.pio/
+firmware/**/.vscode/
+.gcc-flags.json
+.clang_complete
+
+# --- Chromium / Browser Automation Temporary Profiles ---
+edge_profile/
+edge_temp/
+detecta_edge_*/
+
+# --- Temporary Test Outputs & Disposables ---
+test*.pdf
+test*.html
+test_*.py
+inspect_pdf.py
+
+# --- Surveillance Alert Backups & Telemetry Captures ---
 backups/*.jpg
+database/*.db-journal
 
-# Checkpoint zip archives
+# --- Checkpoint Archives & Deep Weights ---
 checkpoints/*.zip
+checkpoints/**/*.pt
 
-# Temporary test images and experimental weights
-*.jpg
-*.png
-!web_dashboard/static/logo.png
-!logo.png
-*.pt
-rtdetr*.pt
+# --- Heavy Model Weights & Experiments (>25MB) ---
 weights/
 *.onnx
+rtdetr*.pt
+yolov8*.pt
 
-# PyInstaller build artifacts
+# --- Media & Asset Whitelisting ---
+# Ignore generic root scratch images, but preserve documentation & branding assets
+*.jpg
+*.png
+!logo.png
+!logo.ico
+!web_dashboard/static/**
+!docs/assets/**
+
+# --- PyInstaller & Executable Build Artifacts ---
 build/
-*.spec
+dist/
 
-# OS artifacts
+# --- Operating System & Editor Metadata ---
 Thumbs.db
 ehthumbs.db
 Desktop.ini
 $RECYCLE.BIN/
 .DS_Store
+.idea/
+.vscode/
+*.swp
+*.bak

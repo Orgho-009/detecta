@@ -40,8 +40,8 @@ def load_config():
             pass
     return {
         "camera_ip": "192.168.0.52",
-        "telegram_token": "8630270967:AAEpNahDspEU2wG2yTcOb305oTE2RKxEfx0",
-        "telegram_chat_id": "-1004297425384",
+        "telegram_token": "",
+        "telegram_chat_id": "",
         "conf_threshold": 0.3,
         "face_tolerance": 0.45
     }
@@ -71,17 +71,19 @@ ai_engine = AIEngine(yolo_path=yolo_weights, db_path=db_pickle)
 camera = None
 stream_lock = threading.Lock()
 latest_processed_frame = None
+latest_jpeg_bytes = None
 latest_inventory = {}
 last_alert_time = 0
 server_start_time = time.time()
 
 def init_camera(ip):
-    global camera, latest_processed_frame
+    global camera, latest_processed_frame, latest_jpeg_bytes
     with stream_lock:
         if camera is not None:
             camera.stop()
             camera = None
         latest_processed_frame = None
+        latest_jpeg_bytes = None
         ip_str = str(ip).strip()
         if ip_str == "0" or (ip_str.isdigit() and len(ip_str) <= 2):
             stream_src = int(ip_str)
@@ -94,7 +96,7 @@ def init_camera(ip):
 init_camera(config.get("camera_ip", "192.168.0.52"))
 
 def processing_worker():
-    global latest_processed_frame, latest_inventory, last_alert_time
+    global latest_processed_frame, latest_jpeg_bytes, latest_inventory, last_alert_time
     print("[Dashboard Backend] AI Processing Worker Thread started.")
     last_frame_id = -1
     while True:
@@ -105,21 +107,26 @@ def processing_worker():
 
             current_frame_id = camera.new_frames
             if current_frame_id == last_frame_id:
-                time.sleep(0.005)
+                time.sleep(0.002)
                 continue
 
             raw = camera.read()
             if raw is None:
                 with stream_lock:
                     latest_processed_frame = None
-                time.sleep(0.02)
+                    latest_jpeg_bytes = None
+                time.sleep(0.01)
                 continue
 
             last_frame_id = current_frame_id
             annotated, inventory = ai_engine.process(raw)
+            ret, jpeg = cv2.imencode('.jpg', annotated, [cv2.IMWRITE_JPEG_QUALITY, 80])
+
             with stream_lock:
                 latest_processed_frame = annotated
                 latest_inventory = inventory
+                if ret:
+                    latest_jpeg_bytes = jpeg.tobytes()
 
             # Telegram Alert Trigger
             human_detected = inventory.get("Human", 0) > 0
@@ -131,7 +138,7 @@ def processing_worker():
                 cv2.imwrite(snap_path, annotated)
                 threading.Thread(target=send_telegram_alert, args=(snap_path, "Human Intrusion Detected!"), daemon=True).start()
 
-            time.sleep(0.005)
+            time.sleep(0.001)
         except Exception as e:
             print(f"[Processing Worker Exception] {e}")
             time.sleep(0.05)
@@ -160,10 +167,12 @@ def index_page():
 @app.get("/api/stream")
 def video_feed():
     def frame_generator():
+        last_sent_bytes = None
         while True:
             with stream_lock:
-                frame = latest_processed_frame
-            if frame is None:
+                jpeg_data = latest_jpeg_bytes
+
+            if jpeg_data is None:
                 # Render clean offline slate placeholder
                 placeholder = np.zeros((320, 480, 3), dtype=np.uint8)
                 cv2.rectangle(placeholder, (5, 5), (475, 315), (30, 41, 59), 2)
@@ -171,13 +180,15 @@ def video_feed():
                 cam_label = config.get("camera_ip", "192.168.0.52")
                 cv2.putText(placeholder, f"Target: http://{cam_label}:81/stream", (80, 165), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (203, 213, 225), 1)
                 cv2.putText(placeholder, "Connecting / Waiting for camera stream...", (70, 200), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (239, 68, 68), 1)
-                frame_to_send = placeholder
-            else:
-                frame_to_send = frame
-            ret, jpeg = cv2.imencode('.jpg', frame_to_send, [cv2.IMWRITE_JPEG_QUALITY, 80])
-            if ret:
-                yield (b'--frame\r\n'
-                       b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
+                ret, ph_jpg = cv2.imencode('.jpg', placeholder, [cv2.IMWRITE_JPEG_QUALITY, 80])
+                if ret:
+                    yield (b'--frame\r\n'
+                           b'Content-Type: image/jpeg\r\n\r\n' + ph_jpg.tobytes() + b'\r\n')
+                time.sleep(0.2)
+                continue
+
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + jpeg_data + b'\r\n')
             time.sleep(0.033)
     return StreamingResponse(frame_generator(), media_type="multipart/x-mixed-replace; boundary=frame")
 
