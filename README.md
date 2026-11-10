@@ -209,21 +209,18 @@ pio run --target upload
 
 ```
 detecta/
-├── .gitignore                      # Git exclusion rules for venv, caches, and weights
+├── .gitignore                      # Git exclusion rules for venv, caches, and secrets
 ├── LICENSE                         # MIT Open-Source License
-├── README.md                       # Master project overview & documentation
+├── README.md                       # Master project overview and documentation
 ├── requirements.txt                # Curated Python package dependencies
 ├── Detecta.exe                     # Standalone Windows application binary
 ├── Detecta.lnk                     # Desktop shortcut
-├── Detecta.spec                    # PyInstaller build specification
 ├── logo.ico                        # Application executable icon
 ├── logo.png                        # Detecta high-resolution brand logo
 ├── run_app.py                      # Desktop app launcher (PyWebView wrapper)
 ├── run_dashboard.py                # Web dashboard server launcher
-├── auto_detect_esp32.py            # Serial COM port auto-discovery listener
 ├── run_web_dashboard.bat           # 1-Click launcher: Web Dashboard
 ├── run_desktop_hud.bat             # 1-Click launcher: OpenCV HUD
-├── run_customtkinter_gui.bat       # 1-Click launcher: Legacy CustomTkinter GUI
 │
 ├── desktop_client/                 # Core AI Engine & Native HUD Client
 │   ├── ai_engine.py                # Multi-modal AI engine (YOLO11s, ArcFace, MediaPipe, Pen disambiguation)
@@ -254,32 +251,14 @@ detecta/
 ├── database/                       # Local SQLite / Snapshot storage
 │   └── .gitkeep                    # Directory keeper for repository cloning
 │
-├── docs/                           # Academic Documentation & Deliverables
-│   ├── README.md                   # Documentation index & guide
-│   ├── DETECTA_LAB_REPORT.md       # Full 10-page LaTeX-style academic lab report
-│   ├── DETECTA_SMART_AI_CAMERA_LAB_REPORT.pdf  # Compiled Academic Lab Report PDF
-│   ├── DETECTA_PROJECT_VIVA_AND_DEFENSE_SCRIPT.pdf # (Gitignored) Private 2-Page Bengali Viva Defense PDF
-│   └── assets/                     # Documentation images and schematics
-│       ├── detecta_circuit_diagram.jpg # Complete hardware wiring schematic
-│       └── logo.png                # Brand logo
-│
-├── scripts/                        # Build, maintenance, and compilation tooling
-│   ├── build_all_docs.py           # Master compiler for all reports and PDFs
-│   ├── generate_latex_style_pdf.py # Generates 10-page academic report PDF
-│   ├── build_latex_style_markdown.py # Generates DETECTA_LAB_REPORT.md
-│   ├── test_stream_fps.py          # Benchmark stream framerate utility
-│   ├── test_ai_cuda.py             # CUDA acceleration validation test
-│   └── create_shortcut.ps1         # Desktop shortcut creation utility
-│
-├── weights/                        # (Gitignored) Large Model Weights
-│   ├── rtdetr-l.pt                 # RT-DETR Large weights (experimental)
-│   ├── yolov8s-worldv2.pt          # YOLOv8-World open-vocabulary weights
-│   └── clip/                       # CLIP ViT-B/32 multimodal weights
-│
-└── checkpoints/                    # Milestone Backups & Snapshots
-    ├── README.md                   # Checkpoints changelog and restore guide
-    ├── restore_checkpoint.bat      # Restore stable v1 checkpoint
-    └── restore_v3_checkpoint.bat   # Restore stable v3 indoor-optimized checkpoint
+└── docs/                           # Academic Documentation & Deliverables
+    ├── README.md                   # Documentation index & guide
+    ├── DETECTA_LAB_REPORT.md       # Full 10-page LaTeX-style academic lab report
+    ├── DETECTA_SMART_AI_CAMERA_LAB_REPORT.pdf  # Compiled Academic Lab Report PDF
+    ├── DETECTA_PROJECT_VIVA_AND_DEFENSE_SCRIPT.pdf # (Gitignored) Private 2-Page Bengali Viva Defense PDF
+    └── assets/                     # Documentation images and schematics
+        ├── detecta_circuit_diagram.jpg # Complete hardware wiring schematic
+        └── logo.png                # Brand logo
 ```
 
 ---

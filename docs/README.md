@@ -18,19 +18,9 @@ This directory contains the formal academic documentation, lab report, circuit s
 
 ---
 
-## Rebuilding Documentation
+## Academic Specifications & Integrity
 
-All deliverables can be automatically compiled and refreshed using the build scripts located in `scripts/`:
-
-```powershell
-# Activate Python environment
-.\.venv\Scripts\activate.ps1
-
-# Run the master builder script
-python scripts/build_all_docs.py
-```
-
-This single command will:
-1. Re-render the Markdown lab report.
-2. Compile the 10-page LaTeX-style academic PDF (`ReportLab` engine).
-3. Generate the bilingual HTML layout and compile the 2-page viva cheat sheet via headless Chromium (`msedge`).
+The deliverables in this directory represent the verified, final academic documentation for the Detecta project:
+1. **Academic Lab Report (PDF):** Standardized 10-page LaTeX-style documentation formatted for formal university submission.
+2. **Lab Report Markdown:** GitHub-flavored Markdown document with complete equations, algorithm walkthroughs, and code listings.
+3. **Circuit Schematics:** Complete electrical interfacing diagram specifying pinouts, voltage dividers, and buck/boost power topology.
