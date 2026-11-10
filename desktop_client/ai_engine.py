@@ -86,6 +86,35 @@ class TrackedBox:
         self.score = max(self.score, score)
         self.ttl = ttl
 
+def ensure_model_downloaded(url, dest_path, description="AI Model"):
+    if os.path.exists(dest_path) and os.path.getsize(dest_path) > 1024:
+        return True
+    print(f"[AI Engine] {description} not found locally. Auto-downloading from {url}...")
+    import urllib.request
+    try:
+        os.makedirs(os.path.dirname(os.path.abspath(dest_path)), exist_ok=True)
+        def progress(count, block_size, total_size):
+            if total_size > 0:
+                pct = min(100, int(count * block_size * 100 / total_size))
+                if count % 200 == 0 or pct == 100:
+                    sys.stdout.write(f"\r[AI Engine] Downloading {description}: {pct}% ({int(count * block_size / 1024 / 1024)}MB / {int(total_size / 1024 / 1024)}MB)")
+                    sys.stdout.flush()
+        temp_file = dest_path + ".tmp"
+        urllib.request.urlretrieve(url, temp_file, reporthook=progress)
+        if os.path.exists(dest_path):
+            os.remove(dest_path)
+        os.rename(temp_file, dest_path)
+        print(f"\n[AI Engine] Successfully downloaded {description} to {dest_path}")
+        return True
+    except Exception as e:
+        print(f"\n[AI Engine] Error auto-downloading {description}: {e}")
+        if os.path.exists(dest_path + ".tmp"):
+            try:
+                os.remove(dest_path + ".tmp")
+            except Exception:
+                pass
+        return False
+
 class AIEngine:
     def __init__(self, yolo_path=None, db_path="desktop_client/known_faces.pkl"):
         # Select device (CUDA on Windows -> MPS on Apple Silicon -> CPU fallback)
@@ -96,11 +125,17 @@ class AIEngine:
         else:
             self.device = "cpu"
 
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        s_path = os.path.join(base_dir, "yolo11s.pt")
+        n_path = os.path.join(base_dir, "yolo11n.pt")
+
         if yolo_path is None:
-            base_dir = os.path.dirname(os.path.abspath(__file__))
-            s_path = os.path.join(base_dir, "yolo11s.pt")
-            n_path = os.path.join(base_dir, "yolo11n.pt")
+            if not os.path.exists(s_path) and not os.path.exists(n_path):
+                yolo_url = "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11s.pt"
+                ensure_model_downloaded(yolo_url, s_path, "Ultralytics YOLO11s Weights")
             yolo_path = s_path if os.path.exists(s_path) else n_path
+            if not os.path.exists(yolo_path):
+                yolo_path = "yolo11s.pt"
 
         print(f"[AI Engine] Loading YOLO model ({yolo_path}) on {self.device}...")
         self.model = YOLO(yolo_path)
@@ -114,8 +149,11 @@ class AIEngine:
         self.gesture_recognizer = None
         if HAS_MEDIAPIPE:
             try:
-                base_dir = os.path.dirname(os.path.abspath(__file__))
                 task_path = os.path.join(base_dir, "gesture_recognizer.task")
+                if not os.path.exists(task_path) or os.path.getsize(task_path) < 1024:
+                    mp_url = "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task"
+                    ensure_model_downloaded(mp_url, task_path, "MediaPipe Gesture Recognizer Model")
+
                 if os.path.exists(task_path):
                     options = mp.tasks.vision.GestureRecognizerOptions(
                         base_options=mp.tasks.BaseOptions(model_asset_path=task_path),

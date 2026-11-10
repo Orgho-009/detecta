@@ -191,6 +191,14 @@ python desktop_client/app.py 192.168.0.216
 ```
 - Interactive Controls: `[S]` Snapshot, `[E]` Enroll Face, `[R]` Change IP, `[Q]` Quit.
 
+#### Option 4: Docker Container Deployment (Zero-Config / Cross-Platform)
+Double-click **`run_docker.bat`** or run:
+```powershell
+docker compose up --build -d
+```
+- **Zero Host Configuration:** No need to manually configure Python, pip, or PyTorch on your host machine. Everything runs inside an isolated container with optional NVIDIA GPU hardware passthrough.
+- Open **[http://localhost:8000](http://localhost:8000)** in your browser.
+
 ---
 
 ### Step 3: Flash ESP32-CAM Firmware (PlatformIO)
@@ -220,6 +228,9 @@ detecta/
 ├── README.md                       # Master project overview and documentation
 ├── requirements.txt                # Curated Python package dependencies
 ├── Setup.bat                       # 1-Click environment & dependency installer
+├── Dockerfile                      # Production Docker container definition
+├── docker-compose.yml              # GPU-accelerated Docker Compose orchestration
+├── run_docker.bat                  # 1-Click launcher: Docker Container
 ├── Detecta.exe                     # Standalone Windows application binary
 ├── Detecta.lnk                     # Desktop shortcut
 ├── logo.ico                        # Application executable icon

@@ -9,7 +9,7 @@ echo.
 where python >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
     echo [ERROR] Python is not installed or not in system PATH.
-    echo Please install Python 3.10 or 3.11 from python.org and check 'Add python.exe to PATH'.
+    echo Please install Python 3.10 or 3.11 from python.org and ensure 'Add python.exe to PATH' is checked.
     pause
     exit /b 1
 )
@@ -29,6 +29,14 @@ call .venv\Scripts\activate.bat
 
 echo [*] Upgrading pip...
 python -m pip install --upgrade pip
+
+where nvidia-smi >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    echo [*] NVIDIA GPU detected! Configuring CUDA 12.1 hardware acceleration...
+    pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+) else (
+    echo [*] Standard environment detected (CPU fallback).
+)
 
 echo [*] Installing required dependencies from requirements.txt...
 pip install -r requirements.txt

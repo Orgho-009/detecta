@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  detecta:
+    build: .
+    container_name: detecta-ai
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DETECTA_DESKTOP=0
+      - PYTHONUNBUFFERED=1
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    volumes:
+      - ./database:/app/database
+      - ./desktop_client/known_faces.pkl:/app/desktop_client/known_faces.pkl

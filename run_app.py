@@ -13,6 +13,37 @@ def show_native_message(title, message):
     except Exception:
         print(f"[{title}] {message}")
 
+def ask_yes_no(title, message):
+    try:
+        import ctypes
+        # 0x04 = MB_YESNO, 0x20 = MB_ICONQUESTION, 0x1000 = MB_SYSTEMMODAL
+        res = ctypes.windll.user32.MessageBoxW(0, message, title, 0x04 | 0x20 | 0x1000)
+        return res == 6  # IDYES = 6
+    except Exception:
+        return False
+
+def auto_setup_environment():
+    setup_bat = os.path.join(ROOT_DIR, "Setup.bat")
+    if not os.path.exists(setup_bat):
+        show_native_message(
+            "Detecta Setup",
+            f"Setup.bat not found at:\n{setup_bat}\nPlease ensure all project files are present."
+        )
+        return False
+
+    choice = ask_yes_no(
+        "Detecta — Automatic Environment Setup",
+        "The Python AI environment (.venv) is not yet configured on this PC.\n\n"
+        "Would you like Detecta to automatically configure the environment and install all dependencies now?\n\n"
+        "Click 'Yes' to start automatic 1-click setup."
+    )
+    if not choice:
+        return False
+
+    # Launch Setup.bat in a visible console window so the user sees progress
+    ret = subprocess.call(["cmd.exe", "/c", setup_bat], cwd=ROOT_DIR)
+    return ret == 0
+
 def get_base_dir():
     if getattr(sys, "frozen", False):
         return os.path.dirname(os.path.abspath(sys.executable))
@@ -70,18 +101,24 @@ def is_server_running():
         return False
 
 def ensure_backend():
-    global backend_proc
+    global backend_proc, PYTHON_EXE
     if is_server_running():
         return True
 
     if not PYTHON_EXE or not os.path.exists(PYTHON_EXE):
-        show_native_message(
-            "Detecta - Python Environment Missing",
-            f"Could not locate Python virtual environment (.venv).\n\n"
-            f"Searched in: {os.path.join(ROOT_DIR, '.venv')}\n"
-            f"Please run setup.bat or ensure dependencies are installed."
-        )
-        return False
+        if auto_setup_environment():
+            candidate_venv_py = os.path.join(ROOT_DIR, ".venv", "Scripts", "python.exe")
+            if os.path.exists(candidate_venv_py):
+                PYTHON_EXE = candidate_venv_py
+
+        if not PYTHON_EXE or not os.path.exists(PYTHON_EXE):
+            show_native_message(
+                "Detecta - Setup Incomplete",
+                "Python environment setup was cancelled or failed.\n\n"
+                f"Searched in: {os.path.join(ROOT_DIR, '.venv')}\n"
+                "Please run Setup.bat manually."
+            )
+            return False
 
     if not os.path.exists(BACKEND_SCRIPT):
         show_native_message(
