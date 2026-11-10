@@ -5,8 +5,15 @@
 #include "soc/rtc_cntl_reg.h"  
 #include <lwip/sockets.h>
 
-const char* ssid = "ORGHO";
-const char* password = "wasfi170";
+#if __has_include("secrets.h")
+  #include "secrets.h"
+#else
+  #define WIFI_SSID "YOUR_WIFI_SSID"
+  #define WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
+#endif
+
+const char* ssid = WIFI_SSID;
+const char* password = WIFI_PASSWORD;
 
 #define PWDN_GPIO_NUM     32
 #define RESET_GPIO_NUM    -1

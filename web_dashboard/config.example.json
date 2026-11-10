@@ -1,11 +1,11 @@
 {
-  "camera_ip": "192.168.0.52",
+  "camera_ip": "192.168.0.216",
   "telegram_token": "",
   "telegram_chat_id": "",
   "conf_threshold": 0.3,
   "face_tolerance": 0.45,
-  "camera_wifi_ssid": "ORGHO",
+  "camera_wifi_ssid": "YOUR_WIFI_SSID",
   "known_networks": [
-    "ORGHO"
+    "YOUR_WIFI_SSID"
   ]
 }

@@ -1,13 +1,51 @@
 # ==============================================================================
-# Detecta — Git Ignore Configuration
+# Detecta — Git Ignore Configuration (Enterprise & Privacy Protected)
 # ==============================================================================
+
+# --- Private Hardware Credentials & Wi-Fi Secrets ---
+# Keeps your home/office Wi-Fi password and device secrets confidential
+secrets.h
+firmware/**/secrets.h
+*.env
+*.env.*
+*.key
+*.token
+*.pem
+
+# --- Local Dashboard Runtime Configuration ---
+# Prevents exposing personal camera IP addresses, SSIDs, and local network setups
+web_dashboard/config.json
+checkpoints/**/config.json
+
+# --- Personal Biometric Data (Face Embeddings Database) ---
+# Facial recognition vectors are sensitive personal biometrics (PII)
+*.pkl
+**/known_faces.pkl
+
+# --- Personal Academic Exam / Viva Defense Cheat Sheets & Notes ---
+# Keeps private presentation notes and oral defense Q&A strictly confidential on your local PC
+*VIVA_AND_DEFENSE_SCRIPT*
+*viva_script*
+*viva*
+scripts/*viva*
+scripts/compile_compact_pdf.py
+docs/private/
+private/
+
+# --- Surveillance Alert Backups, Captures & Local Telemetry Databases ---
+backups/
+database/*.db
+database/*.sqlite
+database/*.sqlite3
+database/*.db-journal
+database/*.json
+!database/.gitkeep
 
 # --- Python Virtual Environments ---
 .venv/
 venv/
 ENV/
 env/
-*.env
 
 # --- Python Bytecode & Cache ---
 __pycache__/
@@ -35,10 +73,6 @@ test*.html
 test_*.py
 inspect_pdf.py
 
-# --- Surveillance Alert Backups & Telemetry Captures ---
-backups/*.jpg
-database/*.db-journal
-
 # --- Checkpoint Archives & Deep Weights ---
 checkpoints/*.zip
 checkpoints/**/*.pt
@@ -56,7 +90,10 @@ yolov8*.pt
 !logo.png
 !logo.ico
 !web_dashboard/static/**
-!docs/assets/**
+!docs/assets/*.jpg
+!docs/assets/*.png
+!docs/assets/*.ico
+!docs/assets/*.svg
 
 # --- PyInstaller & Executable Build Artifacts ---
 build/

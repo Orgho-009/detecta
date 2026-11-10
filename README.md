@@ -28,8 +28,8 @@ For academic review, laboratory evaluations, and technical viva defense:
 | :--- | :--- | :--- |
 | **[Academic Lab Report (PDF)](docs/DETECTA_SMART_AI_CAMERA_LAB_REPORT.pdf)** | PDF (10 Pages) | Formal IEEE/LaTeX-styled academic lab report covering complete hardware architecture, Port 81 streaming pipeline, multi-modal AI engine (YOLO11s, ArcFace 512-D, MediaPipe), and experimental benchmarks. |
 | **[Academic Lab Report (Markdown)](docs/DETECTA_LAB_REPORT.md)** | Markdown | Full GitHub-flavored markdown source of the lab report including comprehensive mathematical formulas and code walkthroughs. |
-| **[Viva & Defense Quick Guide (PDF)](docs/DETECTA_PROJECT_VIVA_AND_DEFENSE_SCRIPT.pdf)** | PDF (2 Pages) | Compact, high-yield bilingual (Bengali + English) presentation and defense script designed for project presentation and teacher viva. |
 | **[Hardware Circuit Diagram](docs/assets/detecta_circuit_diagram.jpg)** | Image (JPG) | Unified hardware schematic detailing power regulation (18650, IP2312, XL6009), Pin 4 ADC telemetry, and ESP32-CAM pinouts. |
+| **Viva & Defense Quick Guide (PDF)** | PDF (2 Pages) | *(Private / Local Exam Deliverable)* Compact bilingual defense script preserved in local `docs/` for viva preparation. |
 | **[Documentation Directory](docs/README.md)** | Markdown Guide | Overview of documentation files and automated compilation scripts. |
 
 ---
@@ -216,13 +216,14 @@ detecta/
 │   ├── app.py                      # OpenCV DirectShow HUD client
 │   ├── camera_stream.py            # Pure Port 81 chunked MJPEG stream ingest
 │   ├── gesture_recognizer.task     # MediaPipe hand gesture model
-│   ├── known_faces.pkl             # ArcFace 512-D registered facial embeddings
+│   ├── known_faces.pkl             # (Gitignored) ArcFace 512-D registered facial biometrics
 │   ├── yolo11n.pt                  # YOLO11 Nano weights fallback
 │   └── yolo11s.pt                  # YOLO11 Small weights (CUDA accelerated)
 │
 ├── web_dashboard/                  # FastAPI Web Backend & Glassmorphism Dashboard
 │   ├── backend.py                  # FastAPI high-throughput MJPEG server & REST API
-│   ├── config.json                 # Dashboard operational parameters
+│   ├── config.example.json         # Dashboard configuration template (Public)
+│   ├── config.json                 # (Gitignored) Local camera IP & network settings
 │   ├── templates/
 │   │   └── index.html              # Apple-style Glassmorphism HTML5/JS dashboard
 │   └── static/                     # Static styling, brand assets & scripts
@@ -232,7 +233,9 @@ detecta/
 │       ├── platformio.ini          # PlatformIO board & baud configuration
 │       └── src/
 │           ├── main.cpp            # FreeRTOS dual-core camera server & Port 81 stream
-│           └── camera_pins.h       # Pin definition mapping for OV2640 sensor
+│           ├── camera_pins.h       # Pin definition mapping for OV2640 sensor
+│           ├── secrets.h.example   # Wi-Fi credentials template (Public)
+│           └── secrets.h           # (Gitignored) Private local Wi-Fi SSID & Password
 │
 ├── database/                       # Local SQLite / Snapshot storage
 │   └── .gitkeep                    # Directory keeper for repository cloning
@@ -241,19 +244,15 @@ detecta/
 │   ├── README.md                   # Documentation index & guide
 │   ├── DETECTA_LAB_REPORT.md       # Full 10-page LaTeX-style academic lab report
 │   ├── DETECTA_SMART_AI_CAMERA_LAB_REPORT.pdf  # Compiled Academic Lab Report PDF
-│   ├── DETECTA_PROJECT_VIVA_AND_DEFENSE_SCRIPT.md # Bilingual Viva Defense Cheat Sheet (Markdown)
-│   ├── DETECTA_PROJECT_VIVA_AND_DEFENSE_SCRIPT.pdf # 2-Page Bengali Typography Viva Defense PDF
+│   ├── DETECTA_PROJECT_VIVA_AND_DEFENSE_SCRIPT.pdf # (Gitignored) Private 2-Page Bengali Viva Defense PDF
 │   └── assets/                     # Documentation images and schematics
 │       ├── detecta_circuit_diagram.jpg # Complete hardware wiring schematic
-│       ├── logo.png                # Brand logo
-│       └── viva_script_compact.html # Source HTML for viva defense guide
+│       └── logo.png                # Brand logo
 │
 ├── scripts/                        # Build, maintenance, and compilation tooling
 │   ├── build_all_docs.py           # Master compiler for all reports and PDFs
 │   ├── generate_latex_style_pdf.py # Generates 10-page academic report PDF
 │   ├── build_latex_style_markdown.py # Generates DETECTA_LAB_REPORT.md
-│   ├── generate_compact_viva_html.py # Generates compact viva HTML
-│   ├── compile_compact_pdf.py      # Edge headless PDF compiler for Bengali text
 │   ├── test_stream_fps.py          # Benchmark stream framerate utility
 │   ├── test_ai_cuda.py             # CUDA acceleration validation test
 │   └── create_shortcut.ps1         # Desktop shortcut creation utility

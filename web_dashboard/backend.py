@@ -38,8 +38,16 @@ def load_config():
                 return json.load(f)
         except Exception:
             pass
+    example_path = os.path.join(ROOT_DIR, "web_dashboard", "config.example.json")
+    if os.path.exists(example_path):
+        try:
+            with open(example_path, "r") as f:
+                cfg = json.load(f)
+                return cfg
+        except Exception:
+            pass
     return {
-        "camera_ip": "192.168.0.52",
+        "camera_ip": "192.168.0.216",
         "telegram_token": "",
         "telegram_chat_id": "",
         "conf_threshold": 0.3,

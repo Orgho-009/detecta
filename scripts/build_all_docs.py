@@ -23,9 +23,14 @@ def main():
     print("\n[2/3] Compiling 10-Page LaTeX-Style Lab Report PDF...")
     subprocess.run([python_exe, os.path.join(scripts_dir, "generate_latex_style_pdf.py")], check=True)
 
-    print("\n[3/3] Generating and Compiling Viva Defense Sheet PDF...")
-    subprocess.run([python_exe, os.path.join(scripts_dir, "generate_compact_viva_html.py")], check=True)
-    subprocess.run([python_exe, os.path.join(scripts_dir, "compile_compact_pdf.py")], check=True)
+    viva_gen = os.path.join(scripts_dir, "generate_compact_viva_html.py")
+    viva_compile = os.path.join(scripts_dir, "compile_compact_pdf.py")
+    if os.path.exists(viva_gen) and os.path.exists(viva_compile):
+        print("\n[3/3] Generating and Compiling Viva Defense Sheet PDF...")
+        subprocess.run([python_exe, viva_gen], check=True)
+        subprocess.run([python_exe, viva_compile], check=True)
+    else:
+        print("\n[3/3] Private viva defense scripts skipped (not present in public repo).")
 
     print("\n" + "=" * 60)
     print(" [ALL DELIVERABLES READY IN docs/ AND ROOT]")

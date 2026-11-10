@@ -39,8 +39,8 @@ def load_config():
             pass
     return {
         "camera_ip": "192.168.0.52",
-        "telegram_token": "8630270967:AAEpNahDspEU2wG2yTcOb305oTE2RKxEfx0",
-        "telegram_chat_id": "-1004297425384",
+        "telegram_token": "",
+        "telegram_chat_id": "",
         "conf_threshold": 0.3,
         "face_tolerance": 0.45
     }
