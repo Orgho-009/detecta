@@ -141,17 +141,23 @@ Standard ESP32-CAM projects mix web controls and MJPEG streams on Port 80, causi
 
 ```powershell
 # 1. Clone the repository
-git clone https://github.com/your-username/detecta.git
+git clone https://github.com/Orgho-009/detecta.git
 cd detecta
+```
 
-# 2. Create and activate a Python virtual environment
+**Quick Automated Setup (1-Click):**
+Double-click **`Setup.bat`** to automatically create the Python virtual environment (`.venv`) and install all required libraries.
+
+**Manual Setup:**
+```powershell
+# 1. Create and activate a Python virtual environment
 python -m venv .venv
 .\.venv\Scripts\activate.ps1
 
-# 3. Install core dependencies
+# 2. Install core dependencies
 pip install -r requirements.txt
 
-# 4. (Optional but Recommended) Install PyTorch with CUDA 12.1 support
+# 3. (Optional for GPU Acceleration) Install PyTorch with CUDA 12.1 support
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
 ```
 
@@ -213,6 +219,7 @@ detecta/
 ├── LICENSE                         # MIT Open-Source License
 ├── README.md                       # Master project overview and documentation
 ├── requirements.txt                # Curated Python package dependencies
+├── Setup.bat                       # 1-Click environment & dependency installer
 ├── Detecta.exe                     # Standalone Windows application binary
 ├── Detecta.lnk                     # Desktop shortcut
 ├── logo.ico                        # Application executable icon

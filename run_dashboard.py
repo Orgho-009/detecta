@@ -30,7 +30,8 @@ def main():
     print(" Serving on: http://localhost:8000 (and local network IP:8000)")
     print(" Press Ctrl+C in this terminal to stop the server.\n")
 
-    threading.Thread(target=open_browser, daemon=True).start()
+    if not os.environ.get("DETECTA_DESKTOP") and "--no-browser" not in sys.argv:
+        threading.Thread(target=open_browser, daemon=True).start()
 
     from web_dashboard.backend import app
     uvicorn.run(app, host="0.0.0.0", port=8000, log_level="warning")
