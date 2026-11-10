@@ -4,14 +4,22 @@
 
 **Course Name:** Digital Logic Design Lab [CSE-214]
 
+**Submitted To:**  
+**Faria Sultana Bintha Rohman**  
+Lab Technical Officer (LTO)  
+Faculty of Science & Engineering  
+Department of Computer Science & Engineering (CSE)  
+Feni University  
+
 **Submitted By (Group Members):**  
 Name: Ahmmed Waseg Bin Mizan Orgho &nbsp;&nbsp;&nbsp;&nbsp; ID: 251031046  
 Name: Rejowan Ferdous Khan &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ID: 251031024  
 Name: Arni Mojumder &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ID: 251031035  
 
 **Department:** Department of Computer Science and Engineering (CSE)  
+**Faculty:** Faculty of Science & Engineering  
 **University:** Feni University  
-**Submission Date:** October 2026  
+**Submission Date:** November 2026  
 
 ---
 
@@ -317,21 +325,32 @@ class CameraStream:
 
 ---
 
-### 5.3 Multi-Modal AI Vision Engine (Python)
+### 5.3 Multi-Modal AI Vision Engine with Auto-Healing & CUDA (Python)
 
 **AI Engine Implementation Breakdown:**
+* **Self-Healing Model Auto-Downloader:** Implements `ensure_model_downloaded` to automatically pull YOLO11s weights and MediaPipe gesture assets on-demand over HTTPS if missing, guaranteeing zero manual setup.
 * **YOLO11s CUDA Acceleration:** Executes object detection across 21 curated asset classes with FP16 half-precision, averaging 11.4ms inference latency on the NVIDIA RTX 4050 GPU.
 * **InsightFace ArcFace 512-D Biometrics:** Generates 512-dimensional facial embedding vectors with cosine-similarity verification. A 25-frame stride caching mechanism drops amortized biometric latency to <2ms per frame.
 * **MediaPipe Hand Gestures & Spatial Pen Filter:** Identifies 7 hand signs. A spatial containment algorithm eliminates bare-finger pen false positives while confirming genuine handheld pens extending $\ge 25\text{px}$ beyond fingertips.
 
 ```python
 import os
+import sys
+import urllib.request
+import torch
 import cv2
 import numpy as np
-import torch
 from ultralytics import YOLO
 from insightface.app import FaceAnalysis
 import mediapipe as mp
+
+def ensure_model_downloaded(url, dest_path, description="AI Model"):
+    if os.path.exists(dest_path) and os.path.getsize(dest_path) > 1024:
+        return True
+    os.makedirs(os.path.dirname(os.path.abspath(dest_path)), exist_ok=True)
+    urllib.request.urlretrieve(url, dest_path + ".tmp")
+    os.rename(dest_path + ".tmp", dest_path)
+    return True
 
 TARGET_CLASSES = {
     0: "Human", 24: "Box / Bag", 26: "Box / Bag", 28: "Box",
@@ -342,11 +361,14 @@ TARGET_CLASSES = {
 }
 
 class AIEngine:
-    def __init__(self, yolo_path="desktop_client/yolo11s.pt", db_path="desktop_client/known_faces.pkl"):
+    def __init__(self, yolo_path=None, db_path="desktop_client/known_faces.pkl"):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.yolo = YOLO(yolo_path).to(self.device)
+        s_path = "desktop_client/yolo11s.pt"
+        if not os.path.exists(s_path):
+            ensure_model_downloaded("https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11s.pt", s_path)
+        self.model = YOLO(s_path if os.path.exists(s_path) else "yolo11s.pt")
         self.face_app = FaceAnalysis(name="buffalo_l", providers=['CUDAExecutionProvider', 'CPUExecutionProvider'])
-        self.face_app.prepare(ctx_id=0, det_size=(640, 640))
+        self.face_app.prepare(ctx_id=0 if self.device == "cuda" else -1, det_size=(320, 320))
         self.face_stride = 25
         self.frame_idx = 0
         self.cached_faces = []
@@ -355,8 +377,8 @@ class AIEngine:
         h, w = frame.shape[:2]
         self.frame_idx += 1
         
-        # 1. YOLO11s Multi-Object Detection
-        results = self.yolo(frame, conf=0.30, iou=0.45, verbose=False, device=self.device)[0]
+        # 1. YOLO11s Multi-Object Detection (CUDA FP16)
+        results = self.model(frame, conf=0.35, iou=0.45, verbose=False, device=self.device)[0]
         detections = []
         for box in results.boxes:
             cls_id = int(box.cls[0])
@@ -391,18 +413,22 @@ class AIEngine:
 
 ---
 
-### 5.4 FastAPI Surveillance Server & Streaming Backend (Python)
+### 5.4 FastAPI Surveillance Server & Desktop App (Python)
 
-**Server Architecture Breakdown:**
+**Server & Client Architecture Breakdown:**
 * **Single-Pass JPEG Cache:** AI processing and HUD rendering execute in a dedicated worker thread, compressing the result once into a shared memory byte buffer (`latest_jpeg_bytes`) for zero-copy client streaming.
-* **RESTful Control Plane:** Exposes endpoints for decoupled MJPEG streaming (`/api/stream`), real-time telemetry (`/api/status`), live face enrollment (`/api/faces/enroll`), and in-band RF scanning (`/api/wifi/scan`).
-* **Standalone Desktop App Execution:** Integrated with Microsoft Edge WebView2, allowing `Detecta.exe` to run as a native Windows desktop client with hardware Direct3D acceleration and zero browser overhead.
+* **Zero-Config Native Windows Client (`Detecta.exe`):** Integrated with Microsoft Edge WebView2. If `.venv` is unconfigured on a new PC, it prompts an interactive dialog and automatically bootstraps dependencies via `Setup.bat` before launching.
+* **RESTful Control Plane:** Exposes endpoints for decoupled MJPEG streaming (`/api/stream`), real-time telemetry (`/api/status`), live face enrollment (`/api/faces/enroll`), and in-band RF scanning.
 
 ```python
+import os
+import sys
 import time
+import subprocess
 import threading
 import cv2
-from fastapi import FastAPI, UploadFile, File, Form
+import webview
+from fastapi import FastAPI
 from fastapi.responses import StreamingResponse, JSONResponse
 from desktop_client.camera_stream import CameraStream
 from desktop_client.ai_engine import AIEngine
@@ -420,6 +446,34 @@ def ai_worker():
         if frame is not None:
             annotated = ai_engine.process_frame(frame)
             ret, jpeg = cv2.imencode('.jpg', annotated, [cv2.IMWRITE_JPEG_QUALITY, 80])
+            if ret:
+                with lock:
+                    latest_jpeg_bytes = jpeg.tobytes()
+        time.sleep(0.01)
+
+threading.Thread(target=ai_worker, daemon=True).start()
+
+@app.get("/api/stream")
+def stream_video():
+    def gen():
+        while True:
+            with lock:
+                buf = latest_jpeg_bytes
+            if buf:
+                yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + buf + b'\r\n')
+            time.sleep(0.033) # 30 FPS client delivery
+    return StreamingResponse(gen(), media_type="multipart/x-mixed-replace; boundary=frame")
+
+# Native Desktop Application Launcher (Detecta.exe)
+def main():
+    window = webview.create_window(
+        title="Detecta — AI Security Intelligence",
+        url="http://127.0.0.1:8000",
+        width=1340,
+        height=860,
+        background_color="#060913"
+    )
+    webview.start(icon="logo.ico")
             if ret:
                 with lock:
                     latest_jpeg_bytes = jpeg.tobytes()
