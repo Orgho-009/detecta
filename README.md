@@ -1,4 +1,4 @@
-# 🛡️ Detecta — Intelligent Multi-Modal AI Surveillance Camera
+# Detecta: Intelligent Multi-Modal AI Surveillance System
 
 <p align="center">
   <img src="docs/assets/logo.png" alt="Detecta Logo" width="140" style="border-radius: 20px;" />
@@ -32,21 +32,21 @@
 
 ---
 
-## 📦 Downloads & Project Deliverables
+## Downloads and Deliverables
 
 For immediate deployment, academic evaluations, and technical review:
 
 | Deliverable | Format / Target | Size | Description | Direct Link |
 | :--- | :--- | :--- | :--- | :--- |
-| **Detecta Desktop Application** | Windows `.exe` (x64) | ~11.8 MB | Standalone native desktop application with embedded Microsoft Edge WebView2, auto-managed FastAPI server, and GPU AI HUD. Zero command-line setup required! | **[📥 Download Detecta.exe](Detecta.exe)** |
-| **Academic Lab Report** | PDF (10 Pages) | ~100 KB | Formal IEEE/LaTeX-styled academic lab report covering complete hardware architecture, Port 81 streaming pipeline, multi-modal AI engine (YOLO11s, ArcFace 512-D, MediaPipe), and experimental benchmarks. | **[📄 Download PDF](docs/DETECTA_SMART_AI_CAMERA_LAB_REPORT.pdf)** |
-| **Hardware Circuit Diagram** | Image (JPG) | ~62 KB | Unified hardware schematic detailing power regulation (18650, IP2312, XL6009), Pin 4 ADC telemetry, and ESP32-CAM pinouts. | **[🔌 View Diagram](docs/assets/detecta_circuit_diagram.jpg)** |
-| **Lab Report Markdown Source** | Markdown (`.md`) | ~24 KB | Full GitHub-flavored markdown source of the lab report including comprehensive mathematical formulas and code walkthroughs. | **[📝 View Markdown](docs/DETECTA_LAB_REPORT.md)** |
-| **Documentation Directory** | Markdown Guide | — | Comprehensive documentation hub, sitemap, and automated compilation scripts. | **[📚 Open Docs](docs/README.md)** |
+| **Detecta Desktop Application** | Windows `.exe` (x64) | ~11.8 MB | Standalone native desktop application with embedded Microsoft Edge WebView2, auto-managed FastAPI server, and GPU AI HUD. Zero command-line setup required. | **[Download Detecta.exe](Detecta.exe)** |
+| **Academic Lab Report** | PDF (10 Pages) | ~100 KB | Formal IEEE/LaTeX-styled academic lab report covering complete hardware architecture, Port 81 streaming pipeline, multi-modal AI engine (YOLO11s, ArcFace 512-D, MediaPipe), and experimental benchmarks. | **[Download PDF](docs/DETECTA_SMART_AI_CAMERA_LAB_REPORT.pdf)** |
+| **Hardware Circuit Diagram** | Image (JPG) | ~62 KB | Unified hardware schematic detailing power regulation (18650, IP2312, XL6009), Pin 4 ADC telemetry, and ESP32-CAM pinouts. | **[View Diagram](docs/assets/detecta_circuit_diagram.jpg)** |
+| **Lab Report Markdown Source** | Markdown (`.md`) | ~24 KB | Full GitHub-flavored markdown source of the lab report including comprehensive mathematical formulas and code walkthroughs. | **[View Markdown](docs/DETECTA_LAB_REPORT.md)** |
+| **Documentation Directory** | Markdown Guide | — | Comprehensive documentation hub, sitemap, and automated compilation scripts. | **[Open Docs](docs/README.md)** |
 
 ---
 
-## 🌟 Executive Overview
+## Executive Overview
 
 **Detecta** is an untethered, end-to-end edge-to-host AI surveillance system. It solves the critical bandwidth, thermal, and computational limitations of edge IoT vision by decoupling tasks into two optimized tiers:
 1. **Edge Sensing Tier:** An AI-Thinker **ESP32-CAM** (OV2640 sensor) powered by an untethered 18650 Li-ion battery and high-efficiency power regulation circuit. It runs a dedicated FreeRTOS dual-core firmware streaming chunked MJPEG video over a clean **Port 81** HTTP socket (`/stream`).
@@ -56,7 +56,7 @@ The system requires **zero cloud infrastructure**, ensuring 100% data sovereignt
 
 ---
 
-## 📐 System Architecture
+## System Architecture
 
 ```mermaid
 flowchart TD
@@ -92,7 +92,7 @@ flowchart TD
 
 ---
 
-## ⚡ Key Engineering Highlights
+## Key Engineering Highlights
 
 ### 1. Dedicated Port 81 High-Throughput Stream Pipeline
 Standard ESP32-CAM projects mix web controls and MJPEG streams on Port 80, causing socket deadlocks and buffer bloat. Detecta allocates **Port 81** strictly to `/stream` with chunked `multipart/x-mixed-replace` encoding. Dynamic bitrate throttling and an optimized FreeRTOS yield clamp frame drops to zero, delivering a rock-steady **20–25+ FPS** VGA stream over Wi-Fi.
@@ -109,7 +109,7 @@ Standard ESP32-CAM projects mix web controls and MJPEG streams on Port 80, causi
 
 ---
 
-## 🔌 Hardware Schematics & Wiring
+## Hardware Schematics and Wiring
 
 <p align="center">
   <img src="docs/assets/detecta_circuit_diagram.jpg" alt="Detecta Circuit Schematic" width="680" style="border: 1px solid #444; border-radius: 8px;" />
@@ -119,15 +119,15 @@ Standard ESP32-CAM projects mix web controls and MJPEG streams on Port 80, causi
 
 | Module / Component | Module Pin | ESP32-CAM Pin | Lead Wire Color | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| **XL6009 Boost Converter** | `OUT+` (5.0V) | **Pin 1 (5V / VCC)** | 🔴 Red | Regulated 5.0V power rail |
-| **XL6009 Boost Converter** | `OUT-` (GND) | **Pin 2 (GND)** | ⚫ Black | Common circuit ground |
-| **Resistor Divider Junction** | Center Tap | **Pin 4 (GPIO 4 / ADC)** | 🟢 Green | Voltage telemetry & flash control |
+| **XL6009 Boost Converter** | `OUT+` (5.0V) | **Pin 1 (5V / VCC)** | Red | Regulated 5.0V power rail |
+| **XL6009 Boost Converter** | `OUT-` (GND) | **Pin 2 (GND)** | Black | Common circuit ground |
+| **Resistor Divider Junction** | Center Tap | **Pin 4 (GPIO 4 / ADC)** | Green | Voltage telemetry & flash control |
 | **UART Flash Header** | `IO0` | `GND` | Jumper Wire | **Programming mode only** (disconnect for live run) |
 | **UART Flash Header** | `U0R` / `U0T` | FTDI `TX` / `RX` | Serial Jumper | Firmware uploading via UART |
 
 ---
 
-## 🚀 Quickstart & Setup Guide
+## Installation and Setup Guide
 
 ### System Requirements
 - **Workstation OS:** Windows 10 / Windows 11 (64-bit)
@@ -161,7 +161,7 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
 
 You can launch Detecta via the standalone executable, batch scripts, or terminal:
 
-#### 🌟 Option 1: Standalone Windows App (Recommended — 1-Click Launch)
+#### Option 1: Standalone Windows Desktop Application (Recommended)
 Simply double-click **[`Detecta.exe`](Detecta.exe)** (or the desktop shortcut `Detecta.lnk`):
 - **Zero Command-Line Setup:** Automatically boots the local FastAPI server in the background and opens an ultra-fast, glassmorphism desktop surveillance dashboard powered by Microsoft Edge WebView2.
 - **Full Multi-Modal AI:** Real-time YOLO11s object detection, ArcFace face recognition, and threat telemetry live on your desktop.
@@ -205,7 +205,7 @@ pio run --target upload
 
 ---
 
-## 🗂️ Project Directory Structure
+## Project Directory Structure
 
 ```
 detecta/
@@ -284,7 +284,7 @@ detecta/
 
 ---
 
-## 🌐 REST API Reference
+## REST API Reference
 
 The FastAPI backend exposes standard REST endpoints for telemetry, settings, and camera controls:
 
@@ -301,7 +301,7 @@ The FastAPI backend exposes standard REST endpoints for telemetry, settings, and
 
 ---
 
-## 👥 Project Team & Contributors
+## Project Team and Contributors
 
 | Sl. | Contributor | Student ID | Role & Core Responsibilities |
 | :---: | :--- | :---: | :--- |
@@ -311,6 +311,6 @@ The FastAPI backend exposes standard REST endpoints for telemetry, settings, and
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.

@@ -1,13 +1,13 @@
-# 📚 Detecta Documentation & Academic Deliverables
+# Detecta Documentation and Academic Deliverables
 
 > [!TIP]
-> Looking for the standalone executable? You can run or download **[`Detecta.exe`](../Detecta.exe)** directly from the project root for 1-click Windows 10/11 desktop surveillance without setting up Python!
+> Looking for the standalone executable? You can run or download **[`Detecta.exe`](../Detecta.exe)** directly from the project root for 1-click Windows 10/11 desktop surveillance without setting up Python.
 
 This directory contains the formal academic documentation, lab report, circuit schematics, and presentation defense materials for the **Detecta** Intelligent AI Surveillance Camera system.
 
 ---
 
-## 📑 Documents Index
+## Documents Index
 
 | Document | Format | Description |
 | :--- | :--- | :--- |
@@ -18,7 +18,7 @@ This directory contains the formal academic documentation, lab report, circuit s
 
 ---
 
-## 🛠️ Rebuilding Documentation
+## Rebuilding Documentation
 
 All deliverables can be automatically compiled and refreshed using the build scripts located in `scripts/`:
 
