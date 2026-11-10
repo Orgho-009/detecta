@@ -18,19 +18,31 @@
   <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT License" />
 </p>
 
+<p align="center">
+  <a href="Detecta.exe">
+    <img src="https://img.shields.io/badge/Download-Detecta.exe%20(Windows%2064--bit)-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download Detecta.exe" />
+  </a>
+  <a href="docs/DETECTA_SMART_AI_CAMERA_LAB_REPORT.pdf">
+    <img src="https://img.shields.io/badge/Academic%20Report-10--Page%20PDF-FF5722?style=for-the-badge&logo=adobeacrobatreader&logoColor=white" alt="Download Academic Report" />
+  </a>
+  <a href="docs/assets/detecta_circuit_diagram.jpg">
+    <img src="https://img.shields.io/badge/Circuit-Hardware%20Schematic-4CAF50?style=for-the-badge&logo=circuitverse&logoColor=white" alt="View Circuit Diagram" />
+  </a>
+</p>
+
 ---
 
-## 📑 Academic Deliverables & Official Documentation
+## 📦 Downloads & Project Deliverables
 
-For academic review, laboratory evaluations, and technical viva defense:
+For immediate deployment, academic evaluations, and technical review:
 
-| Document | Format | Description |
-| :--- | :--- | :--- |
-| **[Academic Lab Report (PDF)](docs/DETECTA_SMART_AI_CAMERA_LAB_REPORT.pdf)** | PDF (10 Pages) | Formal IEEE/LaTeX-styled academic lab report covering complete hardware architecture, Port 81 streaming pipeline, multi-modal AI engine (YOLO11s, ArcFace 512-D, MediaPipe), and experimental benchmarks. |
-| **[Academic Lab Report (Markdown)](docs/DETECTA_LAB_REPORT.md)** | Markdown | Full GitHub-flavored markdown source of the lab report including comprehensive mathematical formulas and code walkthroughs. |
-| **[Hardware Circuit Diagram](docs/assets/detecta_circuit_diagram.jpg)** | Image (JPG) | Unified hardware schematic detailing power regulation (18650, IP2312, XL6009), Pin 4 ADC telemetry, and ESP32-CAM pinouts. |
-| **Viva & Defense Quick Guide (PDF)** | PDF (2 Pages) | *(Private / Local Exam Deliverable)* Compact bilingual defense script preserved in local `docs/` for viva preparation. |
-| **[Documentation Directory](docs/README.md)** | Markdown Guide | Overview of documentation files and automated compilation scripts. |
+| Deliverable | Format / Target | Size | Description | Direct Link |
+| :--- | :--- | :--- | :--- | :--- |
+| **Detecta Desktop Application** | Windows `.exe` (x64) | ~11.8 MB | Standalone native desktop application with embedded Microsoft Edge WebView2, auto-managed FastAPI server, and GPU AI HUD. Zero command-line setup required! | **[📥 Download Detecta.exe](Detecta.exe)** |
+| **Academic Lab Report** | PDF (10 Pages) | ~100 KB | Formal IEEE/LaTeX-styled academic lab report covering complete hardware architecture, Port 81 streaming pipeline, multi-modal AI engine (YOLO11s, ArcFace 512-D, MediaPipe), and experimental benchmarks. | **[📄 Download PDF](docs/DETECTA_SMART_AI_CAMERA_LAB_REPORT.pdf)** |
+| **Hardware Circuit Diagram** | Image (JPG) | ~62 KB | Unified hardware schematic detailing power regulation (18650, IP2312, XL6009), Pin 4 ADC telemetry, and ESP32-CAM pinouts. | **[🔌 View Diagram](docs/assets/detecta_circuit_diagram.jpg)** |
+| **Lab Report Markdown Source** | Markdown (`.md`) | ~24 KB | Full GitHub-flavored markdown source of the lab report including comprehensive mathematical formulas and code walkthroughs. | **[📝 View Markdown](docs/DETECTA_LAB_REPORT.md)** |
+| **Documentation Directory** | Markdown Guide | — | Comprehensive documentation hub, sitemap, and automated compilation scripts. | **[📚 Open Docs](docs/README.md)** |
 
 ---
 
@@ -147,9 +159,15 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
 
 ### Step 2: Launch Detecta
 
-You can launch Detecta using 1-click batch files or terminal commands:
+You can launch Detecta via the standalone executable, batch scripts, or terminal:
 
-#### Option A: Web Intelligence Dashboard (Modern Glassmorphism UI)
+#### 🌟 Option 1: Standalone Windows App (Recommended — 1-Click Launch)
+Simply double-click **[`Detecta.exe`](Detecta.exe)** (or the desktop shortcut `Detecta.lnk`):
+- **Zero Command-Line Setup:** Automatically boots the local FastAPI server in the background and opens an ultra-fast, glassmorphism desktop surveillance dashboard powered by Microsoft Edge WebView2.
+- **Full Multi-Modal AI:** Real-time YOLO11s object detection, ArcFace face recognition, and threat telemetry live on your desktop.
+- **Auto-Discovery:** Automatically connects to your ESP32-CAM stream (or local webcam fallback).
+
+#### Option 2: Web Intelligence Dashboard (Browser Interface)
 Double-click `run_web_dashboard.bat` or run:
 ```powershell
 python run_dashboard.py
@@ -160,11 +178,7 @@ Open **[http://localhost:8000](http://localhost:8000)** in any modern web browse
 - Face Database Manager (ArcFace 512-D enrollment & deletion).
 - Dynamic IP switching (type ESP32 IP or `0` for local USB webcam).
 
-#### Option B: Standalone Windows Native Application
-Double-click `Detecta.exe` (or `run_app.py`):
-- Launches the complete dashboard inside an ultra-lightweight native desktop window powered by `pywebview`.
-
-#### Option C: OpenCV DirectShow HUD Client
+#### Option 3: OpenCV DirectShow HUD Client (Native Window)
 Double-click `run_desktop_hud.bat` or run:
 ```powershell
 python desktop_client/app.py 192.168.0.216

@@ -1,5 +1,8 @@
 # 📚 Detecta Documentation & Academic Deliverables
 
+> [!TIP]
+> Looking for the standalone executable? You can run or download **[`Detecta.exe`](../Detecta.exe)** directly from the project root for 1-click Windows 10/11 desktop surveillance without setting up Python!
+
 This directory contains the formal academic documentation, lab report, circuit schematics, and presentation defense materials for the **Detecta** Intelligent AI Surveillance Camera system.
 
 ---
