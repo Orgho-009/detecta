@@ -22,28 +22,6 @@ def ask_yes_no(title, message):
     except Exception:
         return False
 
-def auto_setup_environment():
-    setup_bat = os.path.join(ROOT_DIR, "Setup.bat")
-    if not os.path.exists(setup_bat):
-        show_native_message(
-            "Detecta Setup",
-            f"Setup.bat not found at:\n{setup_bat}\nPlease ensure all project files are present."
-        )
-        return False
-
-    choice = ask_yes_no(
-        "Detecta — Automatic Environment Setup",
-        "The Python AI environment (.venv) is not yet configured on this PC.\n\n"
-        "Would you like Detecta to automatically configure the environment and install all dependencies now?\n\n"
-        "Click 'Yes' to start automatic 1-click setup."
-    )
-    if not choice:
-        return False
-
-    # Launch Setup.bat in a visible console window so the user sees progress
-    ret = subprocess.call(["cmd.exe", "/c", setup_bat], cwd=ROOT_DIR)
-    return ret == 0
-
 def get_base_dir():
     if getattr(sys, "frozen", False):
         return os.path.dirname(os.path.abspath(sys.executable))
@@ -88,6 +66,27 @@ BACKEND_SCRIPT = os.path.join(ROOT_DIR, "run_dashboard.py")
 ICON_PATH = os.path.join(ROOT_DIR, "logo.ico")
 if not os.path.exists(ICON_PATH):
     ICON_PATH = os.path.join(BASE_DIR, "logo.ico")
+
+def auto_setup_environment():
+    setup_bat = os.path.join(ROOT_DIR, "Setup.bat")
+    if not os.path.exists(setup_bat):
+        show_native_message(
+            "Detecta Setup",
+            f"Setup.bat not found at:\n{setup_bat}\nPlease ensure all project files are present."
+        )
+        return False
+
+    choice = ask_yes_no(
+        "Detecta — Automatic Environment Setup",
+        "The Python AI environment (.venv) is not yet configured on this PC.\n\n"
+        "Would you like Detecta to automatically configure the environment and install all dependencies now?\n\n"
+        "Click 'Yes' to start automatic 1-click setup."
+    )
+    if not choice:
+        return False
+
+    ret = subprocess.call(["cmd.exe", "/c", setup_bat], cwd=ROOT_DIR)
+    return ret == 0
 
 backend_proc = None
 

@@ -8,10 +8,19 @@ echo.
 
 where python >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
-    echo [ERROR] Python is not installed or not in system PATH.
-    echo Please install Python 3.10 or 3.11 from python.org and ensure 'Add python.exe to PATH' is checked.
-    pause
-    exit /b 1
+    echo [!] Python is not currently found in your system PATH.
+    echo [*] Checking Windows Package Manager (winget)...
+    where winget >nul 2>&1
+    if %ERRORLEVEL% EQU 0 (
+        echo [*] Installing Python 3.10 automatically...
+        winget install -e --id Python.Python.3.10 --accept-source-agreements --accept-package-agreements
+        set "PATH=%LOCALAPPDATA%\Programs\Python\Python310;%LOCALAPPDATA%\Programs\Python\Python310\Scripts;%PATH%"
+    ) else (
+        echo [ERROR] Please install Python 3.10 from https://www.python.org/downloads/
+        echo [ERROR] Make sure to check 'Add python.exe to PATH' during installation.
+        pause
+        exit /b 1
+    )
 )
 
 if not exist ".venv" (
