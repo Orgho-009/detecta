@@ -20,6 +20,7 @@ Name: Arni Mojumder &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 **Faculty:** Faculty of Science & Engineering  
 **University:** Feni University  
 **Submission Date:** November 2026  
+**GitHub Repository:** [https://github.com/Orgho-009/detecta](https://github.com/Orgho-009/detecta)  
 
 ---
 
@@ -29,7 +30,7 @@ This project presents **Detecta**, an intelligent, high-framerate edge-to-server
 
 To overcome traditional computer vision streaming bottlenecks such as high network latency, buffer bloat, and socket deadlocks, Detecta establishes a dedicated Port 81 chunked multipart/x-mixed-replace HTTP streaming pipeline (`/stream`) sustaining continuous **20–25+ FPS** over local Wi-Fi with zero frame drops. On the processing host, Detecta executes real-time multi-modal computer vision: **Ultralytics YOLO11s** for multi-object asset detection across 21 curated target classes, deep **InsightFace ArcFace 512-dimensional facial biometrics** with a 25-frame verified face stride caching strategy, and **MediaPipe Hand Gesture classification** recognizing 7 distinct hand signs with spatial pen-versus-finger disambiguation.
 
-The entire surveillance infrastructure is operated through an interactive, glassmorphic dashboard built with FastAPI and TailwindCSS, and packaged into a standalone Windows desktop executable (**`Detecta.exe`**) using Microsoft Edge WebView2, operating 100% locally with complete privacy and zero third-party cloud reliance.
+The entire surveillance infrastructure is operated through an interactive, glassmorphic dashboard built with FastAPI and TailwindCSS, and packaged into a standalone Windows desktop executable (**`Detecta.exe`**) using Microsoft Edge WebView2, operating 100% locally with complete privacy and zero third-party cloud reliance. All source files, firmware, hardware schematics, and binaries are publicly hosted at: [https://github.com/Orgho-009/detecta](https://github.com/Orgho-009/detecta).
 
 ---
 
