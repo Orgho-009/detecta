@@ -1,0 +1,91 @@
+# Credentials and Wi-Fi secrets
+secrets.h
+firmware/**/secrets.h
+*.env
+*.env.*
+*.key
+*.token
+*.pem
+
+# Local runtime config
+web_dashboard/config.json
+checkpoints/**/config.json
+
+# Face embeddings
+*.pkl
+**/known_faces.pkl
+
+# Local notes
+public/private/
+private/
+*.lnk
+
+# Alert backups and local databases
+backups/
+database/*.db
+database/*.sqlite
+database/*.sqlite3
+database/*.db-journal
+database/*.json
+!database/.gitkeep
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+*.so
+.pytest_cache/
+
+# PlatformIO build artifacts
+.pio/
+firmware/**/.pio/
+firmware/**/.vscode/
+.gcc-flags.json
+.clang_complete
+
+# Temporary browser profiles
+edge_profile/
+edge_temp/
+detecta_edge_*/
+
+# Scratch test outputs
+test*.pdf
+test*.html
+test_*.py
+inspect_pdf.py
+
+# Checkpoints and model weights
+checkpoints/*.zip
+checkpoints/**/*.pt
+weights/
+*.onnx
+rtdetr*.pt
+yolov8*.pt
+
+# Ignore root scratch images, keep static and public assets
+*.jpg
+*.png
+!web_dashboard/static/**
+!public/**
+
+# PyInstaller output
+build/
+dist/
+
+# OS and editor metadata
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.bak

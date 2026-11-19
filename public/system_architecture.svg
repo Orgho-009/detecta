@@ -1,0 +1,199 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 440" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #090d16; stroke: #1e293b; stroke-width: 1.5; }
+      .card-edge { fill: #0f172a; stroke: #38bdf8; stroke-width: 1.5; }
+      .card-ai { fill: #0f172a; stroke: #818cf8; stroke-width: 1.5; }
+      .card-app { fill: #0f172a; stroke: #34d399; stroke-width: 1.5; }
+      .hdr-edge { fill: #082f49; }
+      .hdr-ai { fill: #1e1b4b; }
+      .hdr-app { fill: #064e3b; }
+      .node-edge { fill: #162033; stroke: #0284c7; stroke-width: 1.2; }
+      .node-edge-hi { fill: #0c4a6e; stroke: #38bdf8; stroke-width: 1.5; }
+      .node-ai { fill: #17153b; stroke: #6366f1; stroke-width: 1.2; }
+      .node-ai-hi { fill: #1e1b4b; stroke: #818cf8; stroke-width: 1.5; }
+      .node-app { fill: #0d2822; stroke: #10b981; stroke-width: 1.2; }
+      .node-app-hi { fill: #064e3b; stroke: #34d399; stroke-width: 1.5; }
+      .title-edge { fill: #38bdf8; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.6px; }
+      .title-ai { fill: #a5b4fc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.6px; }
+      .title-app { fill: #6ee7b7; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.6px; }
+      .box-title { fill: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 12.5px; font-weight: 600; }
+      .box-sub { fill: #94a3b8; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 10.5px; font-weight: 400; }
+      .box-sub-hi { fill: #cbd5e1; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 10.5px; font-weight: 500; }
+      .pill-text { fill: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 10px; font-weight: 600; }
+      .line-edge { stroke: #38bdf8; stroke-width: 1.5; fill: none; }
+      .line-ai { stroke: #818cf8; stroke-width: 1.5; fill: none; }
+      .line-app { stroke: #34d399; stroke-width: 1.5; fill: none; }
+      .bus-1 { stroke: #38bdf8; stroke-width: 2.5; fill: none; stroke-dasharray: 5 3; }
+      .bus-2 { stroke: #34d399; stroke-width: 2.5; fill: none; }
+    </style>
+    <marker id="arr-edge" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#38bdf8"/>
+    </marker>
+    <marker id="arr-ai" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#818cf8"/>
+    </marker>
+    <marker id="arr-app" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#34d399"/>
+    </marker>
+    <clipPath id="clip-card-1"><rect x="24" y="24" width="336" height="392" rx="10"/></clipPath>
+    <clipPath id="clip-card-2"><rect x="432" y="24" width="336" height="392" rx="10"/></clipPath>
+    <clipPath id="clip-card-3"><rect x="840" y="24" width="336" height="392" rx="10"/></clipPath>
+  </defs>
+
+  <!-- Outer Canvas -->
+  <rect x="2" y="2" width="1196" height="436" rx="14" class="bg"/>
+
+  <!-- ===================================================================== -->
+  <!-- TIER 1: UNTETHERED EDGE NODE (ESP32-CAM)                              -->
+  <!-- ===================================================================== -->
+  <rect x="24" y="24" width="336" height="392" rx="10" class="card-edge"/>
+  <g clip-path="url(#clip-card-1)">
+    <rect x="24" y="24" width="336" height="40" class="hdr-edge"/>
+    <line x1="24" y1="64" x2="360" y2="64" stroke="#38bdf8" stroke-width="1" stroke-opacity="0.5"/>
+  </g>
+  <text x="192" y="49" text-anchor="middle" class="title-edge">1. UNTETHERED EDGE NODE (ESP32-CAM)</text>
+
+  <!-- 1A: Battery -->
+  <rect x="46" y="80" width="292" height="44" rx="6" class="node-edge"/>
+  <text x="192" y="99" text-anchor="middle" class="box-title">18650 Li-ion Battery Pack (3.7V - 4.2V)</text>
+  <text x="192" y="115" text-anchor="middle" class="box-sub">High-Capacity Untethered Primary Cell</text>
+
+  <line x1="192" y1="124" x2="192" y2="140" class="line-edge" marker-end="url(#arr-edge)"/>
+
+  <!-- 1B: Charger + Switch -->
+  <rect x="46" y="142" width="292" height="44" rx="6" class="node-edge"/>
+  <text x="192" y="161" text-anchor="middle" class="box-title">IP2312 3A Type-C Charger + SPST Switch</text>
+  <text x="192" y="177" text-anchor="middle" class="box-sub">CC/CV Fast Buck Charging &amp; Power Isolation</text>
+
+  <line x1="192" y1="186" x2="192" y2="202" class="line-edge" marker-end="url(#arr-edge)"/>
+
+  <!-- 1C: Boost Converter -->
+  <rect x="46" y="204" width="292" height="44" rx="6" class="node-edge"/>
+  <text x="192" y="223" text-anchor="middle" class="box-title">XL6009 4A DC-DC Boost (5.0V Regulated)</text>
+  <text x="192" y="239" text-anchor="middle" class="box-sub">Ripple-Filtered Rail Preventing Brownout Resets</text>
+
+  <!-- Split lines from Boost to Pin 4 ADC and Pin 1 VCC -->
+  <path d="M 114 248 L 114 274" class="line-edge" marker-end="url(#arr-edge)"/>
+  <path d="M 270 248 L 270 274" class="line-edge" marker-end="url(#arr-edge)"/>
+  <rect x="66" y="253" width="96" height="15" rx="3" fill="#090d16" stroke="#0284c7" stroke-width="0.8"/>
+  <text x="114" y="264" text-anchor="middle" class="pill-text">2x 100kΩ Divider</text>
+  <rect x="222" y="253" width="96" height="15" rx="3" fill="#090d16" stroke="#0284c7" stroke-width="0.8"/>
+  <text x="270" y="264" text-anchor="middle" class="pill-text">Pin 1 (5V VCC)</text>
+
+  <!-- 1D: Pin 4 ADC & 1E: ESP32-CAM -->
+  <rect x="46" y="276" width="136" height="56" rx="6" class="node-edge"/>
+  <text x="114" y="299" text-anchor="middle" class="box-title">Pin 4 / GPIO 4</text>
+  <text x="114" y="317" text-anchor="middle" class="box-sub">3.3V ADC Telemetry</text>
+
+  <line x1="182" y1="304" x2="198" y2="304" class="line-edge" marker-end="url(#arr-edge)"/>
+
+  <rect x="200" y="276" width="138" height="56" rx="6" class="node-edge-hi"/>
+  <text x="269" y="299" text-anchor="middle" class="box-title">ESP32-CAM</text>
+  <text x="269" y="317" text-anchor="middle" class="box-sub-hi">OV2640 VGA Sensor</text>
+
+  <line x1="269" y1="332" x2="269" y2="350" class="line-edge" marker-end="url(#arr-edge)"/>
+
+  <!-- 1F: Port 81 Wi-Fi Streamer -->
+  <rect x="46" y="352" width="292" height="46" rx="6" class="node-edge-hi"/>
+  <text x="192" y="372" text-anchor="middle" class="box-title">Dedicated Port 81 HTTP Stream Server</text>
+  <text x="192" y="388" text-anchor="middle" class="box-sub-hi">2.4 GHz Wi-Fi · Chunked MJPEG (/stream)</text>
+
+
+  <!-- ===================================================================== -->
+  <!-- INTER-TIER BUS 1 -> 2                                                 -->
+  <!-- ===================================================================== -->
+  <line x1="360" y1="220" x2="428" y2="220" class="bus-1" marker-end="url(#arr-edge)"/>
+  <rect x="365" y="186" width="62" height="26" rx="4" fill="#082f49" stroke="#38bdf8" stroke-width="1"/>
+  <text x="396" y="197" text-anchor="middle" class="pill-text">Port 81</text>
+  <text x="396" y="208" text-anchor="middle" class="pill-text">25+ FPS</text>
+
+
+  <!-- ===================================================================== -->
+  <!-- TIER 2: HOST CUDA AI ENGINE (RTX 4050 FP16)                           -->
+  <!-- ===================================================================== -->
+  <rect x="432" y="24" width="336" height="392" rx="10" class="card-ai"/>
+  <g clip-path="url(#clip-card-2)">
+    <rect x="432" y="24" width="336" height="40" class="hdr-ai"/>
+    <line x1="432" y1="64" x2="768" y2="64" stroke="#818cf8" stroke-width="1" stroke-opacity="0.5"/>
+  </g>
+  <text x="600" y="49" text-anchor="middle" class="title-ai">2. HOST CUDA AI ENGINE (RTX 4050 FP16)</text>
+
+  <!-- 2A: CameraStream -->
+  <rect x="454" y="80" width="292" height="44" rx="6" class="node-ai"/>
+  <text x="600" y="99" text-anchor="middle" class="box-title">CameraStream Chunked HTTP Reader</text>
+  <text x="600" y="115" text-anchor="middle" class="box-sub">Content-Length Boundary Demuxer (No FFmpeg Lock)</text>
+
+  <line x1="600" y1="124" x2="600" y2="140" class="line-ai" marker-end="url(#arr-ai)"/>
+
+  <!-- 2B: Non-Buffering Queue -->
+  <rect x="454" y="142" width="292" height="44" rx="6" class="node-ai"/>
+  <text x="600" y="161" text-anchor="middle" class="box-title">Thread-Safe Non-Buffering Frame Queue</text>
+  <text x="600" y="177" text-anchor="middle" class="box-sub">Zero-Backlog Latest-Frame Atomic Pointer</text>
+
+  <line x1="600" y1="186" x2="600" y2="206" class="line-ai" marker-end="url(#arr-ai)"/>
+
+  <!-- 2C: YOLO11s -->
+  <rect x="454" y="208" width="292" height="54" rx="6" class="node-ai-hi"/>
+  <text x="600" y="230" text-anchor="middle" class="box-title">Ultralytics YOLO11s (CUDA FP16 Tensor)</text>
+  <text x="600" y="248" text-anchor="middle" class="box-sub-hi">21 Curated Asset Classes · EMA Box Smoothing</text>
+
+  <!-- 2D: InsightFace ArcFace -->
+  <rect x="454" y="276" width="292" height="54" rx="6" class="node-ai-hi"/>
+  <text x="600" y="298" text-anchor="middle" class="box-title">InsightFace ArcFace (512-D Biometrics)</text>
+  <text x="600" y="316" text-anchor="middle" class="box-sub-hi">Cosine Similarity Matching · 25-Frame Stride Cache</text>
+
+  <!-- 2E: MediaPipe Hand Gestures -->
+  <rect x="454" y="344" width="292" height="54" rx="6" class="node-ai-hi"/>
+  <text x="600" y="366" text-anchor="middle" class="box-title">MediaPipe Hand Gesture Recognizer</text>
+  <text x="600" y="384" text-anchor="middle" class="box-sub-hi">21 3D Hand Landmarks · Spatial Pen Disambiguation</text>
+
+
+  <!-- ===================================================================== -->
+  <!-- INTER-TIER BUS 2 -> 3                                                 -->
+  <!-- ===================================================================== -->
+  <line x1="768" y1="220" x2="836" y2="220" class="bus-2" marker-end="url(#arr-app)"/>
+  <rect x="773" y="186" width="62" height="26" rx="4" fill="#064e3b" stroke="#34d399" stroke-width="1"/>
+  <text x="804" y="197" text-anchor="middle" class="pill-text">Annotated</text>
+  <text x="804" y="208" text-anchor="middle" class="pill-text">&lt;14 ms</text>
+
+
+  <!-- ===================================================================== -->
+  <!-- TIER 3: BACKEND & CLIENT INTERFACES                                   -->
+  <!-- ===================================================================== -->
+  <rect x="840" y="24" width="336" height="392" rx="10" class="card-app"/>
+  <g clip-path="url(#clip-card-3)">
+    <rect x="840" y="24" width="336" height="40" class="hdr-app"/>
+    <line x1="840" y1="64" x2="1176" y2="64" stroke="#34d399" stroke-width="1" stroke-opacity="0.5"/>
+  </g>
+  <text x="1008" y="49" text-anchor="middle" class="title-app">3. BACKEND &amp; CLIENT INTERFACES</text>
+
+  <!-- 3A: FastAPI Backend -->
+  <rect x="862" y="80" width="292" height="44" rx="6" class="node-app-hi"/>
+  <text x="1008" y="99" text-anchor="middle" class="box-title">FastAPI &amp; Uvicorn Server (Port 8000)</text>
+  <text x="1008" y="115" text-anchor="middle" class="box-sub-hi">Async REST API · MJPEG Broadcaster · Wi-Fi Control</text>
+
+  <line x1="1008" y1="124" x2="1008" y2="140" class="line-app" marker-end="url(#arr-app)"/>
+
+  <!-- 3B: Local SQLite & Biometric Store -->
+  <rect x="862" y="142" width="292" height="44" rx="6" class="node-app"/>
+  <text x="1008" y="161" text-anchor="middle" class="box-title">Local Biometric &amp; Alert Storage</text>
+  <text x="1008" y="177" text-anchor="middle" class="box-sub">known_faces.pkl · Intrusion Snapshots · Telegram</text>
+
+  <line x1="1008" y1="186" x2="1008" y2="206" class="line-app" marker-end="url(#arr-app)"/>
+
+  <!-- 3C: Standalone Desktop App -->
+  <rect x="862" y="208" width="292" height="54" rx="6" class="node-app-hi"/>
+  <text x="1008" y="230" text-anchor="middle" class="box-title">Standalone Windows App (Detecta.exe)</text>
+  <text x="1008" y="248" text-anchor="middle" class="box-sub-hi">Native x64 Executable · Microsoft Edge WebView2</text>
+
+  <!-- 3D: Glassmorphism Web Dashboard -->
+  <rect x="862" y="276" width="292" height="54" rx="6" class="node-app"/>
+  <text x="1008" y="298" text-anchor="middle" class="box-title">Glassmorphism Web Intelligence UI</text>
+  <text x="1008" y="316" text-anchor="middle" class="box-sub">HTML5 Canvas · Face Manager · Live Threat Feed</text>
+
+  <!-- 3E: OpenCV DirectShow HUD -->
+  <rect x="862" y="344" width="292" height="54" rx="6" class="node-app"/>
+  <text x="1008" y="366" text-anchor="middle" class="box-title">OpenCV DirectShow Native HUD Client</text>
+  <text x="1008" y="384" text-anchor="middle" class="box-sub">Hardware-Accelerated Desktop Window (app.py)</text>
+</svg>

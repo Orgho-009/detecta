@@ -1,0 +1,2 @@
+# Detecta local database directory
+# SQLite databases, temporary snapshots, and persistent telemetry logs are stored here.
